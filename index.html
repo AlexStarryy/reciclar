@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>App Didáctica de Residuos</title>
+  <style>
+    :root{
+      --bg: #0f172a;
+      --card: rgba(255,255,255,.08);
+      --card-2: rgba(255,255,255,.12);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --primary: #38bdf8;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --shadow: 0 20px 50px rgba(0,0,0,.35);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top, #1e293b 0%, #0f172a 45%, #020617 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .app{
+      width: min(1200px, 96vw);
+      margin: 0 auto;
+      padding: 24px 0 40px;
+    }
+
+    header{
+      text-align:center;
+      padding: 12px 0 22px;
+    }
+
+    h1{
+      margin: 0 0 8px;
+      font-size: clamp(1.6rem, 3vw, 3rem);
+      letter-spacing: .3px;
+    }
+
+    p.subtitle{
+      margin: 0 auto;
+      max-width: 760px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 20px;
+      align-items: stretch;
+      margin-top: 18px;
+    }
+
+    .panel{
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    .panel .head{
+      padding: 16px 18px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      background: linear-gradient(90deg, rgba(56,189,248,.12), transparent);
+    }
+
+    .panel .head h2{
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .panel .body{
+      padding: 18px;
+    }
+
+    .camera-wrap{
+      position: relative;
+      aspect-ratio: 16 / 10;
+      background: #020617;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    video, canvas.preview{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display:block;
+      background: #020617;
+    }
+
+    .scan-line{
+      position:absolute;
+      left: 0;
+      top: -25%;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, rgba(56,189,248,.95), transparent);
+      box-shadow: 0 0 28px rgba(56,189,248,.8);
+      animation: scan 2.8s linear infinite;
+      pointer-events:none;
+    }
+
+    @keyframes scan{
+      0%   { transform: translateY(0); }
+      100% { transform: translateY(145%); }
+    }
+
+    .camera-overlay{
+      position:absolute;
+      inset: 0;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      padding: 14px;
+      pointer-events:none;
+      background: linear-gradient(to top, rgba(2,6,23,.55), transparent 35%);
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(15,23,42,.7);
+      border: 1px solid rgba(255,255,255,.1);
+      color: var(--text);
+      font-size: .92rem;
+      backdrop-filter: blur(8px);
+    }
+
+    .controls{
+      display:grid;
+      gap: 12px;
+    }
+
+    .control-group{
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    label{
+      display:block;
+      margin-bottom: 8px;
+      font-size: .92rem;
+      color: var(--muted);
+    }
+
+    select, button{
+      width: 100%;
+      border: none;
+      outline: none;
+      border-radius: 14px;
+      padding: 13px 14px;
+      font: inherit;
+    }
+
+    select{
+      background: rgba(15,23,42,.95);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,.1);
+    }
+
+    button{
+      background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
+      box-shadow: 0 14px 30px rgba(14,165,233,.25);
+    }
+
+    button:hover{ transform: translateY(-1px); filter: brightness(1.05); }
+    button:active{ transform: translateY(0); }
+
+    .btn-secondary{
+      background: linear-gradient(135deg, #334155, #1e293b);
+      box-shadow: none;
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .result{
+      display:grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .result-card{
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .result-title{
+      margin: 0 0 6px;
+      font-size: 1rem;
+    }
+
+    .result-text{
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .bins{
+      display:grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .bin{
+      position: relative;
+      padding: 16px;
+      min-height: 118px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+      overflow:hidden;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .bin::before{
+      content:"";
+      position:absolute;
+      inset:auto -20% -45% -20%;
+      height: 80px;
+      border-radius: 50%;
+      opacity: .28;
+      filter: blur(1px);
+    }
+
+    .bin h3{
+      margin: 0 0 6px;
+      font-size: 1rem;
+      position: relative;
+      z-index:1;
+    }
+
+    .bin p{
+      margin:0;
+      color: var(--muted);
+      font-size: .92rem;
+      position: relative;
+      z-index:1;
+      line-height: 1.45;
+    }
+
+    .organic::before{ background: var(--success); }
+    .plastic::before{ background: var(--primary); }
+    .paper::before{ background: #60a5fa; }
+    .glass::before{ background: #a78bfa; }
+    .danger::before{ background: var(--danger); }
+    .electronic::before{ background: #f97316; }
+
+    .bin.active{
+      transform: translateY(-3px) scale(1.01);
+      border-color: rgba(56,189,248,.65);
+      box-shadow: 0 0 0 1px rgba(56,189,248,.28), 0 0 24px rgba(56,189,248,.18);
+    }
+
+    .hint{
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.45;
+    }
+
+    .footer-note{
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: .88rem;
+      text-align:center;
+    }
+
+    @media (max-width: 960px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 620px){
+      .bins{ grid-template-columns: 1fr; }
+      .camera-wrap{ aspect-ratio: 4 / 3; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Clasificador Didáctico de Residuos</h1>
+      <p class="subtitle">
+        Una interfaz simple para mostrar el residuo en cámara y señalar el contenedor correcto.
+        Incluye animación de escaneo y resaltado visual del destino.
+      </p>
+    </header>
+
+    <section class="grid">
+      <article class="panel">
+        <div class="head">
+          <h2>Cámara en vivo</h2>
+        </div>
+        <div class="body">
+          <div class="camera-wrap">
+            <video id="camera" autoplay playsinline></video>
+            <div class="scan-line"></div>
+            <div class="camera-overlay">
+              <div class="badge">📷 Cámara activa</div>
+              <div class="badge" id="statusBadge">Esperando detección...</div>
+            </div>
+          </div>
+
+          <div class="hint">
+            Para este prototipo, la identificación se hace de forma manual mediante el selector.
+            Es la base ideal para luego conectar un modelo real de visión por computadora.
+          </div>
+        </div>
+      </article>
+
+      <aside class="panel">
+        <div class="head">
+          <h2>Detección y respuesta</h2>
+        </div>
+        <div class="body controls">
+          <div class="control-group">
+            <label for="residueType">Tipo de residuo</label>
+            <select id="residueType">
+              <option value="organic">Orgánico</option>
+              <option value="plastic">Plástico</option>
+              <option value="paper">Papel / Cartón</option>
+              <option value="glass">Vidrio</option>
+              <option value="electronic">Electrónico</option>
+              <option value="danger">Peligroso</option>
+            </select>
+          </div>
+
+          <button id="detectBtn">Simular detección</button>
+          <button id="resetBtn" class="btn-secondary">Restablecer</button>
+
+          <div class="result">
+            <div class="result-card">
+              <h3 class="result-title">Resultado</h3>
+              <p class="result-text" id="resultText">
+                Selecciona un residuo y presiona “Simular detección”.
+              </p>
+            </div>
+            <div class="result-card">
+              <h3 class="result-title">Acción recomendada</h3>
+              <p class="result-text" id="binText">
+                Aquí aparecerá el contenedor correcto.
+              </p>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel" style="margin-top:20px;">
+      <div class="head">
+        <h2>Contenedores disponibles</h2>
+      </div>
+      <div class="body">
+        <div class="bins">
+          <div class="bin organic" data-bin="organic">
+            <h3>Orgánico</h3>
+            <p>Restos de comida, cáscaras, hojas y residuos biodegradables.</p>
+          </div>
+          <div class="bin plastic" data-bin="plastic">
+            <h3>Plástico</h3>
+            <p>Botellas, empaques limpios y envases reciclables.</p>
+          </div>
+          <div class="bin paper" data-bin="paper">
+            <h3>Papel / Cartón</h3>
+            <p>Hojas, cajas limpias, cuadernos y material de fibra vegetal.</p>
+          </div>
+          <div class="bin glass" data-bin="glass">
+            <h3>Vidrio</h3>
+            <p>Frascos y botellas de vidrio, sin mezclar con otros materiales.</p>
+          </div>
+          <div class="bin electronic" data-bin="electronic">
+            <h3>Electrónico</h3>
+            <p>Celulares dañados, cables, pilas y pequeños componentes.</p>
+          </div>
+          <div class="bin danger" data-bin="danger">
+            <h3>Peligroso</h3>
+            <p>Medicinas, aerosoles, químicos y residuos de riesgo.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer-note">
+      Prototipo HTML/CSS/JS. Si luego necesitas detección real, esto se puede conectar a TensorFlow.js o a una API de visión entrenada.
+    </div>
+  </div>
+
+  <script>
+    const video = document.getElementById('camera');
+    const detectBtn = document.getElementById('detectBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const residueType = document.getElementById('residueType');
+    const resultText = document.getElementById('resultText');
+    const binText = document.getElementById('binText');
+    const statusBadge = document.getElementById('statusBadge');
+    const bins = document.querySelectorAll('.bin');
+
+    const mapping = {
+      organic: {
+        name: 'Orgánico',
+        bin: 'Orgánico',
+        message: 'Depósitalo en el contenedor orgánico.',
+        detail: 'Residuos biodegradables y restos de comida.'
+      },
+      plastic: {
+        name: 'Plástico',
+        bin: 'Plástico',
+        message: 'Depósitalo en el contenedor de plástico.',
+        detail: 'Envases limpios, botellas y empaques reciclables.'
+      },
+      paper: {
+        name: 'Papel / Cartón',
+        bin: 'Papel / Cartón',
+        message: 'Depósitalo en el contenedor de papel y cartón.',
+        detail: 'Hojas, cajas y material de fibra vegetal.'
+      },
+      glass: {
+        name: 'Vidrio',
+        bin: 'Vidrio',
+        message: 'Depósitalo en el contenedor de vidrio.',
+        detail: 'Frascos y botellas de vidrio.'
+      },
+      electronic: {
+        name: 'Electrónico',
+        bin: 'Electrónico',
+        message: 'Llévalo al punto de residuos electrónicos.',
+        detail: 'Cables, pilas y aparatos pequeños.'
+      },
+      danger: {
+        name: 'Peligroso',
+        bin: 'Peligroso',
+        message: 'No va a un contenedor común. Debe tratarse aparte.',
+        detail: 'Medicinas, químicos y residuos de riesgo.'
+      }
+    };
+
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' },
+          audio: false
+        });
+        video.srcObject = stream;
+        statusBadge.textContent = 'Cámara lista';
+      } catch (error) {
+        statusBadge.textContent = 'Sin acceso a cámara';
+        resultText.textContent = 'El navegador no pudo abrir la cámara. Revisa permisos o usa HTTPS.';
+        binText.textContent = 'Aún puedes probar la interfaz sin cámara.';
+        console.error(error);
+      }
+    }
+
+    function clearActiveBins() {
+      bins.forEach(bin => bin.classList.remove('active'));
+    }
+
+    function activateBin(type) {
+      clearActiveBins();
+      const bin = document.querySelector(`.bin[data-bin="${type}"]`);
+      if (bin) bin.classList.add('active');
+    }
+
+    detectBtn.addEventListener('click', () => {
+      const type = residueType.value;
+      const data = mapping[type];
+
+      statusBadge.textContent = 'Residuo detectado';
+      resultText.textContent = `Detectado: ${data.name}. ${data.detail}`;
+      binText.textContent = data.message;
+      activateBin(type);
+    });
+
+    resetBtn.addEventListener('click', () => {
+      residueType.value = 'organic';
+      statusBadge.textContent = 'Esperando detección...';
+      resultText.textContent = 'Selecciona un residuo y presiona “Simular detección”.';
+      binText.textContent = 'Aquí aparecerá el contenedor correcto.';
+      clearActiveBins();
+    });
+
+    startCamera();
+  </script>
+</body>
+</html>
