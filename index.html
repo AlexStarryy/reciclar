@@ -1,507 +1,855 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>App Didáctica de Residuos</title>
+  <title>Clasificador de Residuos — GTC 24 Colombia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
-    :root{
-      --bg: #0f172a;
-      --card: rgba(255,255,255,.08);
-      --card-2: rgba(255,255,255,.12);
-      --text: #e2e8f0;
-      --muted: #94a3b8;
-      --primary: #38bdf8;
-      --success: #22c55e;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --shadow: 0 20px 50px rgba(0,0,0,.35);
-      --radius: 22px;
+    :root {
+      --bg: #0a0f0d;
+      --surface: #111a14;
+      --surface2: #1a2620;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
+      --text: #e8f0eb;
+      --muted: #7a9982;
+      --accent: #4ade80;
+      --accent2: #22c55e;
+
+      --verde: #16a34a;
+      --azul: #2563eb;
+      --gris: #6b7280;
+      --rojo: #dc2626;
+      --naranja: #ea580c;
+      --oscuro: #374151;
     }
 
-    * { box-sizing: border-box; }
-    body{
-      margin:0;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background:
-        radial-gradient(circle at top, #1e293b 0%, #0f172a 45%, #020617 100%);
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
-    .app{
-      width: min(1200px, 96vw);
+    /* BG texture */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 0%, rgba(34,197,94,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 100%, rgba(37,99,235,0.05) 0%, transparent 55%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      width: min(1100px, 95vw);
       margin: 0 auto;
-      padding: 24px 0 40px;
+      padding: 32px 0 56px;
     }
 
-    header{
-      text-align:center;
-      padding: 12px 0 22px;
+    /* HEADER */
+    header {
+      margin-bottom: 32px;
     }
 
-    h1{
-      margin: 0 0 8px;
-      font-size: clamp(1.6rem, 3vw, 3rem);
-      letter-spacing: .3px;
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 8px;
     }
 
-    p.subtitle{
-      margin: 0 auto;
-      max-width: 760px;
+    .logo {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--accent2), #166534);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    h1 span {
+      color: var(--accent);
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      max-width: 520px;
+      margin-top: 4px;
+    }
+
+    .gtc-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(74,222,128,0.1);
+      border: 1px solid rgba(74,222,128,0.2);
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-top: 10px;
+    }
+
+    /* GRID */
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 820px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    /* PANELS */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .panel-head {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-head h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    .panel-body {
+      padding: 16px;
+    }
+
+    /* CAMERA */
+    .cam-wrap {
+      position: relative;
+      aspect-ratio: 4/3;
+      background: #020a05;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--border2);
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    canvas { display: none; }
+
+    .scan-line {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%);
+      box-shadow: 0 0 12px rgba(74,222,128,0.6);
+      opacity: 0;
+      transition: opacity 0.3s;
+      animation: scanmove 2s linear infinite;
+    }
+
+    .scan-line.active { opacity: 1; }
+
+    @keyframes scanmove {
+      0% { top: 0%; }
+      100% { top: 100%; }
+    }
+
+    .cam-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 12px;
+      pointer-events: none;
+    }
+
+    /* Corner brackets */
+    .brackets {
+      position: absolute;
+      inset: 16px;
+      pointer-events: none;
+    }
+
+    .bracket {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-color: rgba(74,222,128,0.5);
+      border-style: solid;
+    }
+
+    .bracket.tl { top: 0; left: 0; border-width: 2px 0 0 2px; border-radius: 3px 0 0 0; }
+    .bracket.tr { top: 0; right: 0; border-width: 2px 2px 0 0; border-radius: 0 3px 0 0; }
+    .bracket.bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; border-radius: 0 0 0 3px; }
+    .bracket.br { bottom: 0; right: 0; border-width: 0 2px 2px 0; border-radius: 0 0 3px 0; }
+
+    .cam-status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .chip {
+      font-size: 11px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(10,15,13,0.75);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      backdrop-filter: blur(6px);
+      font-weight: 500;
+    }
+
+    .chip.green { color: var(--accent); border-color: rgba(74,222,128,0.25); }
+
+    /* BUTTONS */
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    button {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 12px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s ease;
+    }
+
+    .btn-main {
+      background: var(--accent2);
+      color: #0a1a0f;
+      font-weight: 600;
+    }
+
+    .btn-main:hover:not(:disabled) { background: var(--accent); }
+    .btn-main:active:not(:disabled) { transform: scale(0.98); }
+    .btn-main:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-sec {
+      background: var(--surface2);
+      color: var(--muted);
+      border: 1px solid var(--border2);
+    }
+
+    .btn-sec:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+
+    /* RESULT */
+    .result-panel {
+      margin-top: 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      min-height: 90px;
+    }
+
+    .result-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    .result-obj {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      line-height: 1.2;
+    }
+
+    .result-caneca {
+      font-size: 0.88rem;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .result-desc {
+      font-size: 0.85rem;
       color: var(--muted);
       line-height: 1.55;
     }
 
-    .grid{
-      display:grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 20px;
-      align-items: stretch;
-      margin-top: 18px;
-    }
-
-    .panel{
-      background: var(--card);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
+    /* BINS GRID */
+    .bins-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
       overflow: hidden;
-      backdrop-filter: blur(12px);
     }
 
-    .panel .head{
-      padding: 16px 18px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      background: linear-gradient(90deg, rgba(56,189,248,.12), transparent);
-    }
-
-    .panel .head h2{
-      margin: 0;
-      font-size: 1.05rem;
-    }
-
-    .panel .body{
-      padding: 18px;
-    }
-
-    .camera-wrap{
-      position: relative;
-      aspect-ratio: 16 / 10;
-      background: #020617;
-      border-radius: 18px;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,.08);
-    }
-
-    video, canvas.preview{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display:block;
-      background: #020617;
-    }
-
-    .scan-line{
-      position:absolute;
-      left: 0;
-      top: -25%;
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, transparent, rgba(56,189,248,.95), transparent);
-      box-shadow: 0 0 28px rgba(56,189,248,.8);
-      animation: scan 2.8s linear infinite;
-      pointer-events:none;
-    }
-
-    @keyframes scan{
-      0%   { transform: translateY(0); }
-      100% { transform: translateY(145%); }
-    }
-
-    .camera-overlay{
-      position:absolute;
-      inset: 0;
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      padding: 14px;
-      pointer-events:none;
-      background: linear-gradient(to top, rgba(2,6,23,.55), transparent 35%);
-    }
-
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(15,23,42,.7);
-      border: 1px solid rgba(255,255,255,.1);
-      color: var(--text);
-      font-size: .92rem;
-      backdrop-filter: blur(8px);
-    }
-
-    .controls{
-      display:grid;
-      gap: 12px;
-    }
-
-    .control-group{
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 18px;
-      padding: 14px;
-    }
-
-    label{
-      display:block;
-      margin-bottom: 8px;
-      font-size: .92rem;
-      color: var(--muted);
-    }
-
-    select, button{
-      width: 100%;
-      border: none;
-      outline: none;
-      border-radius: 14px;
-      padding: 13px 14px;
-      font: inherit;
-    }
-
-    select{
-      background: rgba(15,23,42,.95);
-      color: var(--text);
-      border: 1px solid rgba(255,255,255,.1);
-    }
-
-    button{
-      background: linear-gradient(135deg, #38bdf8, #0ea5e9);
-      color: white;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
-      box-shadow: 0 14px 30px rgba(14,165,233,.25);
-    }
-
-    button:hover{ transform: translateY(-1px); filter: brightness(1.05); }
-    button:active{ transform: translateY(0); }
-
-    .btn-secondary{
-      background: linear-gradient(135deg, #334155, #1e293b);
-      box-shadow: none;
-      border: 1px solid rgba(255,255,255,.08);
-    }
-
-    .result{
-      display:grid;
+    .bins-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 10px;
-      margin-top: 14px;
-    }
-
-    .result-card{
-      padding: 14px;
-      border-radius: 16px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.08);
-    }
-
-    .result-title{
-      margin: 0 0 6px;
-      font-size: 1rem;
-    }
-
-    .result-text{
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
-    .bins{
-      display:grid;
-      gap: 12px;
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .bin{
-      position: relative;
       padding: 16px;
-      min-height: 118px;
-      border-radius: 18px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.08);
-      overflow:hidden;
-      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
     }
 
-    .bin::before{
-      content:"";
-      position:absolute;
-      inset:auto -20% -45% -20%;
-      height: 80px;
+    @media (max-width: 500px) {
+      .bins-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .bin-card {
+      border-radius: 14px;
+      padding: 14px 10px;
+      text-align: center;
+      border: 2px solid transparent;
+      transition: all 0.22s ease;
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bin-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      opacity: 0.12;
+    }
+
+    .bin-card.verde { background: rgba(22,163,74,0.1); }
+    .bin-card.verde::before { background: var(--verde); }
+    .bin-card.azul { background: rgba(37,99,235,0.1); }
+    .bin-card.azul::before { background: var(--azul); }
+    .bin-card.gris { background: rgba(107,114,128,0.1); }
+    .bin-card.gris::before { background: var(--gris); }
+    .bin-card.rojo { background: rgba(220,38,38,0.1); }
+    .bin-card.rojo::before { background: var(--rojo); }
+    .bin-card.naranja { background: rgba(234,88,12,0.1); }
+    .bin-card.naranja::before { background: var(--naranja); }
+    .bin-card.gris_e { background: rgba(55,65,81,0.15); }
+    .bin-card.gris_e::before { background: var(--oscuro); }
+
+    .bin-card.active {
+      transform: translateY(-3px) scale(1.03);
+    }
+
+    .bin-card.active.verde { border-color: var(--verde); box-shadow: 0 0 0 1px rgba(22,163,74,0.3), 0 8px 24px rgba(22,163,74,0.2); }
+    .bin-card.active.azul { border-color: var(--azul); box-shadow: 0 0 0 1px rgba(37,99,235,0.3), 0 8px 24px rgba(37,99,235,0.2); }
+    .bin-card.active.gris { border-color: var(--gris); box-shadow: 0 0 0 1px rgba(107,114,128,0.4), 0 8px 24px rgba(107,114,128,0.15); }
+    .bin-card.active.rojo { border-color: var(--rojo); box-shadow: 0 0 0 1px rgba(220,38,38,0.3), 0 8px 24px rgba(220,38,38,0.2); }
+    .bin-card.active.naranja { border-color: var(--naranja); box-shadow: 0 0 0 1px rgba(234,88,12,0.3), 0 8px 24px rgba(234,88,12,0.2); }
+    .bin-card.active.gris_e { border-color: var(--oscuro); box-shadow: 0 0 0 1px rgba(55,65,81,0.4), 0 8px 24px rgba(55,65,81,0.15); }
+
+    .bin-icon { font-size: 26px; margin-bottom: 6px; position: relative; z-index: 1; }
+
+    .bin-color-dot {
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
-      opacity: .28;
-      filter: blur(1px);
-    }
-
-    .bin h3{
-      margin: 0 0 6px;
-      font-size: 1rem;
+      margin: 0 auto 5px;
       position: relative;
-      z-index:1;
+      z-index: 1;
     }
 
-    .bin p{
-      margin:0;
-      color: var(--muted);
-      font-size: .92rem;
+    .bin-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 3px;
       position: relative;
-      z-index:1;
-      line-height: 1.45;
+      z-index: 1;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
 
-    .organic::before{ background: var(--success); }
-    .plastic::before{ background: var(--primary); }
-    .paper::before{ background: #60a5fa; }
-    .glass::before{ background: #a78bfa; }
-    .danger::before{ background: var(--danger); }
-    .electronic::before{ background: #f97316; }
-
-    .bin.active{
-      transform: translateY(-3px) scale(1.01);
-      border-color: rgba(56,189,248,.65);
-      box-shadow: 0 0 0 1px rgba(56,189,248,.28), 0 0 24px rgba(56,189,248,.18);
-    }
-
-    .hint{
-      margin-top: 10px;
+    .bin-mat {
+      font-size: 10px;
       color: var(--muted);
-      font-size: .9rem;
-      line-height: 1.45;
+      line-height: 1.4;
+      position: relative;
+      z-index: 1;
     }
 
-    .footer-note{
-      margin-top: 16px;
+    /* FOOTER */
+    .footer {
+      margin-top: 24px;
+      text-align: center;
       color: var(--muted);
-      font-size: .88rem;
-      text-align:center;
+      font-size: 0.82rem;
+      line-height: 1.6;
     }
 
-    @media (max-width: 960px){
-      .grid{ grid-template-columns: 1fr; }
+    .footer strong { color: var(--text); font-weight: 500; }
+
+    /* SPINNER */
+    .spinner {
+      display: inline-block;
+      width: 13px;
+      height: 13px;
+      border: 2px solid rgba(10,26,15,0.35);
+      border-top-color: #0a1a0f;
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
     }
 
-    @media (max-width: 620px){
-      .bins{ grid-template-columns: 1fr; }
-      .camera-wrap{ aspect-ratio: 4 / 3; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* API KEY INPUT */
+    .apikey-wrap {
+      margin-bottom: 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+
+    .apikey-wrap label {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .apikey-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .apikey-row input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .apikey-row input:focus { border-color: rgba(74,222,128,0.4); }
+
+    .apikey-row input::placeholder { color: var(--muted); }
+
+    .btn-save {
+      background: var(--surface2);
+      color: var(--accent);
+      border: 1px solid rgba(74,222,128,0.25);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      white-space: nowrap;
+    }
+
+    .btn-save:hover { background: rgba(74,222,128,0.08); }
+
+    .apikey-note {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 7px;
+      line-height: 1.5;
     }
   </style>
 </head>
 <body>
   <div class="app">
+
     <header>
-      <h1>Clasificador Didáctico de Residuos</h1>
-      <p class="subtitle">
-        Una interfaz simple para mostrar el residuo en cámara y señalar el contenedor correcto.
-        Incluye animación de escaneo y resaltado visual del destino.
-      </p>
+      <div class="header-top">
+        <div class="logo">♻️</div>
+        <h1>Clasifica<span>Residuos</span></h1>
+      </div>
+      <p class="subtitle">Apunta la cámara a cualquier residuo y la IA te dice exactamente en qué caneca va.</p>
+      <div class="gtc-badge">✦ Basado en norma GTC 24 Colombia</div>
     </header>
 
-    <section class="grid">
-      <article class="panel">
-        <div class="head">
+    <!-- API KEY -->
+    <div class="apikey-wrap">
+      <label>Clave API de Anthropic</label>
+      <div class="apikey-row">
+        <input type="password" id="apiKey" placeholder="sk-ant-..." />
+        <button class="btn-save" onclick="saveKey()">Guardar</button>
+      </div>
+      <p class="apikey-note">
+        Obtén tu clave en <strong>console.anthropic.com</strong>. Se guarda solo en tu navegador (localStorage) y nunca se envía a ningún servidor externo.
+      </p>
+    </div>
+
+    <div class="grid">
+      <!-- CAMERA PANEL -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="dot"></div>
           <h2>Cámara en vivo</h2>
         </div>
-        <div class="body">
-          <div class="camera-wrap">
-            <video id="camera" autoplay playsinline></video>
-            <div class="scan-line"></div>
-            <div class="camera-overlay">
-              <div class="badge">📷 Cámara activa</div>
-              <div class="badge" id="statusBadge">Esperando detección...</div>
+        <div class="panel-body">
+          <div class="cam-wrap">
+            <video id="vid" autoplay playsinline muted></video>
+            <canvas id="cnv"></canvas>
+            <div class="scan-line" id="scanLine"></div>
+            <div class="brackets">
+              <div class="bracket tl"></div>
+              <div class="bracket tr"></div>
+              <div class="bracket bl"></div>
+              <div class="bracket br"></div>
+            </div>
+            <div class="cam-overlay">
+              <div></div>
+              <div class="cam-status-row">
+                <span class="chip" id="camChip">Iniciando…</span>
+                <span class="chip green" id="aiChip" style="display:none">IA lista ✦</span>
+              </div>
             </div>
           </div>
 
-          <div class="hint">
-            Para este prototipo, la identificación se hace de forma manual mediante el selector.
-            Es la base ideal para luego conectar un modelo real de visión por computadora.
-          </div>
-        </div>
-      </article>
-
-      <aside class="panel">
-        <div class="head">
-          <h2>Detección y respuesta</h2>
-        </div>
-        <div class="body controls">
-          <div class="control-group">
-            <label for="residueType">Tipo de residuo</label>
-            <select id="residueType">
-              <option value="organic">Orgánico</option>
-              <option value="plastic">Plástico</option>
-              <option value="paper">Papel / Cartón</option>
-              <option value="glass">Vidrio</option>
-              <option value="electronic">Electrónico</option>
-              <option value="danger">Peligroso</option>
-            </select>
-          </div>
-
-          <button id="detectBtn">Simular detección</button>
-          <button id="resetBtn" class="btn-secondary">Restablecer</button>
-
-          <div class="result">
-            <div class="result-card">
-              <h3 class="result-title">Resultado</h3>
-              <p class="result-text" id="resultText">
-                Selecciona un residuo y presiona “Simular detección”.
-              </p>
-            </div>
-            <div class="result-card">
-              <h3 class="result-title">Acción recomendada</h3>
-              <p class="result-text" id="binText">
-                Aquí aparecerá el contenedor correcto.
-              </p>
-            </div>
-          </div>
-        </div>
-      </aside>
-    </section>
-
-    <section class="panel" style="margin-top:20px;">
-      <div class="head">
-        <h2>Contenedores disponibles</h2>
-      </div>
-      <div class="body">
-        <div class="bins">
-          <div class="bin organic" data-bin="organic">
-            <h3>Orgánico</h3>
-            <p>Restos de comida, cáscaras, hojas y residuos biodegradables.</p>
-          </div>
-          <div class="bin plastic" data-bin="plastic">
-            <h3>Plástico</h3>
-            <p>Botellas, empaques limpios y envases reciclables.</p>
-          </div>
-          <div class="bin paper" data-bin="paper">
-            <h3>Papel / Cartón</h3>
-            <p>Hojas, cajas limpias, cuadernos y material de fibra vegetal.</p>
-          </div>
-          <div class="bin glass" data-bin="glass">
-            <h3>Vidrio</h3>
-            <p>Frascos y botellas de vidrio, sin mezclar con otros materiales.</p>
-          </div>
-          <div class="bin electronic" data-bin="electronic">
-            <h3>Electrónico</h3>
-            <p>Celulares dañados, cables, pilas y pequeños componentes.</p>
-          </div>
-          <div class="bin danger" data-bin="danger">
-            <h3>Peligroso</h3>
-            <p>Medicinas, aerosoles, químicos y residuos de riesgo.</p>
+          <div class="btn-row">
+            <button class="btn-main" id="btnAnalyze" disabled onclick="analyze()">
+              <span id="btnTxt">Analizar residuo</span>
+            </button>
+            <button class="btn-sec" onclick="resetResult()">Limpiar</button>
           </div>
         </div>
       </div>
-    </section>
 
-    <div class="footer-note">
-      Prototipo HTML/CSS/JS. Si luego necesitas detección real, esto se puede conectar a TensorFlow.js o a una API de visión entrenada.
+      <!-- RESULT PANEL -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="dot" style="background:#60a5fa;"></div>
+          <h2>Resultado de IA</h2>
+        </div>
+        <div class="panel-body">
+          <div class="result-panel">
+            <div class="result-label">Objeto detectado</div>
+            <div class="result-obj" id="resObj" style="color:var(--muted)">—</div>
+            <div class="result-caneca" id="resCaneca" style="color:var(--muted)">Presiona "Analizar residuo" para comenzar</div>
+            <div class="result-desc" id="resDesc"></div>
+          </div>
+
+          <div style="margin-top:12px; background:var(--surface2); border:1px solid var(--border); border-radius:14px; padding:16px;">
+            <div class="result-label">Instrucción de descarte</div>
+            <div class="result-desc" id="resInstruccion" style="color:var(--text); font-size:0.9rem; line-height:1.6;">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BINS -->
+    <div class="bins-section">
+      <div class="panel-head">
+        <div class="dot" style="background:#a78bfa;"></div>
+        <h2>Contenedores — GTC 24</h2>
+      </div>
+      <div class="bins-grid" id="binsGrid"></div>
+    </div>
+
+    <div class="footer">
+      <p>
+        Clasificación basada en la norma colombiana <strong>GTC 24</strong> de separación en la fuente.<br/>
+        Análisis de imagen con <strong>Claude claude-sonnet-4-20250514 (Anthropic)</strong>. Cámara y clave API permanecen locales en tu dispositivo.
+      </p>
     </div>
   </div>
 
   <script>
-    const video = document.getElementById('camera');
-    const detectBtn = document.getElementById('detectBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const residueType = document.getElementById('residueType');
-    const resultText = document.getElementById('resultText');
-    const binText = document.getElementById('binText');
-    const statusBadge = document.getElementById('statusBadge');
-    const bins = document.querySelectorAll('.bin');
-
-    const mapping = {
-      organic: {
-        name: 'Orgánico',
-        bin: 'Orgánico',
-        message: 'Depósitalo en el contenedor orgánico.',
-        detail: 'Residuos biodegradables y restos de comida.'
+    const BINS = [
+      {
+        id: "verde",
+        color: "#16a34a",
+        name: "Verde",
+        label: "Orgánico",
+        materials: "Restos de comida, cáscaras, jardín"
       },
-      plastic: {
-        name: 'Plástico',
-        bin: 'Plástico',
-        message: 'Depósitalo en el contenedor de plástico.',
-        detail: 'Envases limpios, botellas y empaques reciclables.'
+      {
+        id: "azul",
+        color: "#2563eb",
+        name: "Azul",
+        label: "Reciclable",
+        materials: "Papel, cartón, plástico, vidrio, metal limpios"
       },
-      paper: {
-        name: 'Papel / Cartón',
-        bin: 'Papel / Cartón',
-        message: 'Depósitalo en el contenedor de papel y cartón.',
-        detail: 'Hojas, cajas y material de fibra vegetal.'
+      {
+        id: "gris",
+        color: "#6b7280",
+        name: "Gris",
+        label: "No reciclable",
+        materials: "Papel sucio, icopor, empaques mixtos"
       },
-      glass: {
-        name: 'Vidrio',
-        bin: 'Vidrio',
-        message: 'Depósitalo en el contenedor de vidrio.',
-        detail: 'Frascos y botellas de vidrio.'
+      {
+        id: "rojo",
+        color: "#dc2626",
+        name: "Rojo",
+        label: "Peligroso",
+        materials: "Medicamentos, pilas, químicos, aerosoles"
       },
-      electronic: {
-        name: 'Electrónico',
-        bin: 'Electrónico',
-        message: 'Llévalo al punto de residuos electrónicos.',
-        detail: 'Cables, pilas y aparatos pequeños.'
+      {
+        id: "naranja",
+        color: "#ea580c",
+        name: "Naranja",
+        label: "Biosanitario",
+        materials: "Material médico, vendas, jeringas usadas"
       },
-      danger: {
-        name: 'Peligroso',
-        bin: 'Peligroso',
-        message: 'No va a un contenedor común. Debe tratarse aparte.',
-        detail: 'Medicinas, químicos y residuos de riesgo.'
+      {
+        id: "gris_e",
+        color: "#374151",
+        name: "Gris oscuro",
+        label: "Electrónico",
+        materials: "Cables, celulares, computadores, pilas recargables"
       }
-    };
+    ];
 
-    async function startCamera() {
+    // Build bin cards
+    const grid = document.getElementById("binsGrid");
+    BINS.forEach(b => {
+      const d = document.createElement("div");
+      d.className = `bin-card ${b.id}`;
+      d.id = "bin-" + b.id;
+      d.innerHTML = `
+        <div class="bin-color-dot" style="background:${b.color}"></div>
+        <div class="bin-name">${b.name}</div>
+        <div class="bin-mat">${b.label}<br/><span style="font-size:9px;opacity:0.65">${b.materials.split(",")[0]}…</span></div>
+      `;
+      grid.appendChild(d);
+    });
+
+    // API key
+    const keyInput = document.getElementById("apiKey");
+    const stored = localStorage.getItem("anthropic_key");
+    if (stored) { keyInput.value = stored; }
+
+    function saveKey() {
+      const k = keyInput.value.trim();
+      if (k) {
+        localStorage.setItem("anthropic_key", k);
+        document.getElementById("aiChip").style.display = "inline";
+        alert("Clave guardada. ¡Listo para analizar!");
+      }
+    }
+
+    // Camera
+    const vid = document.getElementById("vid");
+    const cnv = document.getElementById("cnv");
+    const scanLine = document.getElementById("scanLine");
+    const camChip = document.getElementById("camChip");
+    const aiChip = document.getElementById("aiChip");
+    const btnAnalyze = document.getElementById("btnAnalyze");
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false })
+      .then(stream => {
+        vid.srcObject = stream;
+        vid.onloadedmetadata = () => {
+          camChip.textContent = "Cámara activa";
+          btnAnalyze.disabled = false;
+          if (localStorage.getItem("anthropic_key")) {
+            aiChip.style.display = "inline";
+          }
+        };
+      })
+      .catch(() => {
+        camChip.textContent = "Sin acceso a cámara";
+        document.getElementById("resCaneca").textContent = "No se pudo abrir la cámara. Verifica permisos del navegador.";
+      });
+
+    function captureFrame() {
+      cnv.width = vid.videoWidth || 640;
+      cnv.height = vid.videoHeight || 480;
+      cnv.getContext("2d").drawImage(vid, 0, 0);
+      return cnv.toDataURL("image/jpeg", 0.82).split(",")[1];
+    }
+
+    function clearBins() {
+      BINS.forEach(b => document.getElementById("bin-" + b.id).classList.remove("active"));
+    }
+
+    function activateBin(id) {
+      clearBins();
+      const el = document.getElementById("bin-" + id);
+      if (el) el.classList.add("active");
+    }
+
+    async function analyze() {
+      const apiKey = (keyInput.value || localStorage.getItem("anthropic_key") || "").trim();
+      if (!apiKey) {
+        alert("Primero ingresa tu clave API de Anthropic.");
+        return;
+      }
+
+      btnAnalyze.disabled = true;
+      document.getElementById("btnTxt").innerHTML = '<span class="spinner"></span>Analizando…';
+      scanLine.classList.add("active");
+      clearBins();
+
+      const resObj = document.getElementById("resObj");
+      const resCaneca = document.getElementById("resCaneca");
+      const resDesc = document.getElementById("resDesc");
+      const resInstruccion = document.getElementById("resInstruccion");
+
+      resObj.style.color = "var(--muted)";
+      resObj.textContent = "Identificando…";
+      resCaneca.textContent = "Consultando IA…";
+      resDesc.textContent = "";
+      resInstruccion.textContent = "—";
+
+      const imageData = captureFrame();
+
+      const systemPrompt = `Eres un experto en clasificación de residuos para Colombia, basado estrictamente en la norma GTC 24.
+Analiza la imagen y responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional, sin explicaciones, sin backticks, con esta estructura exacta:
+{
+  "encontrado": true,
+  "objeto": "nombre del objeto detectado en español (ej: botella de plástico, cáscara de plátano, pila alcalina)",
+  "categoria": "una de estas exactamente: verde, azul, gris, rojo, naranja, gris_e",
+  "caneca": "nombre completo de la caneca según GTC 24",
+  "razon": "una oración corta explicando por qué va ahí",
+  "instruccion": "instrucción práctica de cómo desecharlo correctamente, máximo 2 oraciones"
+}
+
+Si la imagen está vacía, borrosa o no hay ningún residuo visible, responde:
+{"encontrado": false}
+
+Categorías GTC 24:
+- verde: residuos orgánicos biodegradables (comida, jardín, madera, papel sucio no reciclable)
+- azul: aprovechables limpios (papel limpio, cartón, plástico, vidrio, metales, envases limpios)
+- gris: no aprovechables ordinarios (papel higiénico, toallas, icopor, papel sucio, empaques con residuos)
+- rojo: residuos peligrosos (pilas, medicamentos vencidos, químicos, aerosoles, pinturas, aceites)
+- naranja: residuos biosanitarios o infecciosos (jeringas usadas, vendas con sangre, material médico)
+- gris_e: residuos de aparatos eléctricos y electrónicos (RAEE)`;
+
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' },
-          audio: false
+        const resp = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": apiKey,
+            "anthropic-version": "2023-06-01",
+            "anthropic-dangerous-direct-browser-access": "true"
+          },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 400,
+            system: systemPrompt,
+            messages: [{
+              role: "user",
+              content: [
+                { type: "image", source: { type: "base64", media_type: "image/jpeg", data: imageData } },
+                { type: "text", text: "¿Qué residuo es este y en qué caneca va según la norma GTC 24 de Colombia?" }
+              ]
+            }]
+          })
         });
-        video.srcObject = stream;
-        statusBadge.textContent = 'Cámara lista';
-      } catch (error) {
-        statusBadge.textContent = 'Sin acceso a cámara';
-        resultText.textContent = 'El navegador no pudo abrir la cámara. Revisa permisos o usa HTTPS.';
-        binText.textContent = 'Aún puedes probar la interfaz sin cámara.';
-        console.error(error);
+
+        const data = await resp.json();
+
+        if (data.error) {
+          throw new Error(data.error.message || "Error de API");
+        }
+
+        const raw = data.content?.find(c => c.type === "text")?.text || "{}";
+        const clean = raw.replace(/```json|```/g, "").trim();
+        const res = JSON.parse(clean);
+
+        if (!res.encontrado) {
+          resObj.style.color = "var(--muted)";
+          resObj.textContent = "Sin residuo detectado";
+          resCaneca.style.color = "var(--muted)";
+          resCaneca.textContent = "Acerca el objeto a la cámara e intenta de nuevo.";
+          resDesc.textContent = "";
+          resInstruccion.textContent = "—";
+        } else {
+          const bin = BINS.find(b => b.id === res.categoria);
+          resObj.style.color = bin ? bin.color : "var(--text)";
+          resObj.textContent = res.objeto;
+          resCaneca.style.color = bin ? bin.color : "var(--text)";
+          resCaneca.textContent = `→ ${res.caneca}`;
+          resDesc.textContent = res.razon;
+          resInstruccion.textContent = res.instruccion;
+          activateBin(res.categoria);
+        }
+
+      } catch (e) {
+        resObj.style.color = "#dc2626";
+        resObj.textContent = "Error al analizar";
+        resCaneca.style.color = "var(--muted)";
+        resCaneca.textContent = "Verifica tu clave API y tu conexión a internet.";
+        resDesc.textContent = String(e);
+        resInstruccion.textContent = "—";
       }
+
+      scanLine.classList.remove("active");
+      btnAnalyze.disabled = false;
+      document.getElementById("btnTxt").textContent = "Analizar residuo";
     }
 
-    function clearActiveBins() {
-      bins.forEach(bin => bin.classList.remove('active'));
+    function resetResult() {
+      clearBins();
+      const resObj = document.getElementById("resObj");
+      resObj.style.color = "var(--muted)";
+      resObj.textContent = "—";
+      document.getElementById("resCaneca").style.color = "var(--muted)";
+      document.getElementById("resCaneca").textContent = 'Presiona "Analizar residuo" para comenzar';
+      document.getElementById("resDesc").textContent = "";
+      document.getElementById("resInstruccion").textContent = "—";
     }
-
-    function activateBin(type) {
-      clearActiveBins();
-      const bin = document.querySelector(`.bin[data-bin="${type}"]`);
-      if (bin) bin.classList.add('active');
-    }
-
-    detectBtn.addEventListener('click', () => {
-      const type = residueType.value;
-      const data = mapping[type];
-
-      statusBadge.textContent = 'Residuo detectado';
-      resultText.textContent = `Detectado: ${data.name}. ${data.detail}`;
-      binText.textContent = data.message;
-      activateBin(type);
-    });
-
-    resetBtn.addEventListener('click', () => {
-      residueType.value = 'organic';
-      statusBadge.textContent = 'Esperando detección...';
-      resultText.textContent = 'Selecciona un residuo y presiona “Simular detección”.';
-      binText.textContent = 'Aquí aparecerá el contenedor correcto.';
-      clearActiveBins();
-    });
-
-    startCamera();
   </script>
 </body>
 </html>
