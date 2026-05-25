@@ -1,855 +1,779 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Clasificador de Residuos — GTC 24 Colombia</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Identificador de Residuos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --bg: #0a0f0d;
-      --surface: #111a14;
-      --surface2: #1a2620;
-      --border: rgba(255,255,255,0.07);
-      --border2: rgba(255,255,255,0.12);
-      --text: #e8f0eb;
-      --muted: #7a9982;
-      --accent: #4ade80;
-      --accent2: #22c55e;
+      --white:   #ffffff;
+      --off:     #f5f5f7;
+      --g100:    #f2f2f2;
+      --g200:    #e5e5e5;
+      --g300:    #d4d4d4;
+      --g400:    #a3a3a3;
+      --g500:    #737373;
+      --g600:    #525252;
+      --g800:    #262626;
+      --black:   #0a0a0a;
 
-      --verde: #16a34a;
-      --azul: #2563eb;
-      --gris: #6b7280;
-      --rojo: #dc2626;
-      --naranja: #ea580c;
-      --oscuro: #374151;
+      --verde:   #2d6a2d; --verde-l:   #e8f5e9;
+      --azul:    #1a56a0; --azul-l:    #e3efff;
+      --gris:    #5c5c5c; --gris-l:    #f0f0f0;
+      --rojo:    #c0392b; --rojo-l:    #fdecea;
+      --naranja: #c05c00; --naranja-l: #fff3e0;
+      --elec:    #2c3e70; --elec-l:    #e8ebf7;
+
+      --r-sm: 10px; --r-md: 16px; --r-lg: 22px; --r-xl: 30px;
+      --sh-sm: 0 1px 4px rgba(0,0,0,.07);
+      --sh-md: 0 4px 16px rgba(0,0,0,.08);
+      --sh-lg: 0 12px 40px rgba(0,0,0,.10);
+      --sh-xl: 0 24px 64px rgba(0,0,0,.12);
+      --ease:  .32s cubic-bezier(.4,0,.2,1);
+      --font:  'Plus Jakarta Sans', system-ui, sans-serif;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
+    html { scroll-behavior: smooth; }
     body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      font-family: var(--font);
+      background: var(--off);
+      color: var(--g800);
       min-height: 100vh;
-      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* BG texture */
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 80% 60% at 20% 0%, rgba(34,197,94,0.07) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 50% at 80% 100%, rgba(37,99,235,0.05) 0%, transparent 55%);
-      pointer-events: none;
-      z-index: 0;
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: var(--white);
+      border-bottom: 1px solid var(--g200);
+      padding: 44px 24px 36px;
+      text-align: center;
     }
-
-    .app {
-      position: relative;
-      z-index: 1;
-      width: min(1100px, 95vw);
-      margin: 0 auto;
-      padding: 32px 0 56px;
-    }
-
-    /* HEADER */
-    header {
-      margin-bottom: 32px;
-    }
-
-    .header-top {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 8px;
-    }
-
-    .logo {
-      width: 42px;
-      height: 42px;
-      background: linear-gradient(135deg, var(--accent2), #166534);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      flex-shrink: 0;
-    }
-
-    h1 {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.4rem);
       font-weight: 800;
-      letter-spacing: -0.02em;
-      line-height: 1;
+      letter-spacing: -.03em;
+      line-height: 1.08;
+      color: var(--black);
+      margin-bottom: 0;
     }
 
-    h1 span {
-      color: var(--accent);
-    }
+    /* ── MAIN ─────────────────────────────────── */
+    .main { width: min(1120px, 96vw); margin: 0 auto; padding: 40px 0 80px; }
 
-    .subtitle {
-      color: var(--muted);
-      font-size: 0.95rem;
-      line-height: 1.6;
-      max-width: 520px;
-      margin-top: 4px;
+    /* ── STEP LABEL ───────────────────────────── */
+    .step-label { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+    .step-num {
+      width: 28px; height: 28px; background: var(--black); color: var(--white);
+      border-radius: 50%; font-size: 13px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
+    .step-title { font-size: 15px; font-weight: 600; color: var(--g600); letter-spacing: -.01em; }
 
-    .gtc-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(74,222,128,0.1);
-      border: 1px solid rgba(74,222,128,0.2);
-      color: var(--accent);
-      font-size: 0.75rem;
-      font-weight: 500;
-      padding: 4px 10px;
-      border-radius: 999px;
-      margin-top: 10px;
-    }
-
-    /* GRID */
-    .grid {
+    /* ── CAMERA LAYOUT ────────────────────────── */
+    .camera-section { margin-bottom: 32px; }
+    .camera-layout {
       display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
+      grid-template-columns: 420px 1fr;
       gap: 16px;
-      margin-bottom: 16px;
+      align-items: start;
+    }
+    @media(max-width:860px) { .camera-layout { grid-template-columns: 1fr; } }
+
+    /* cam card */
+    .cam-card {
+      background: var(--white); border-radius: var(--r-xl);
+      box-shadow: var(--sh-md); overflow: hidden;
+      border: 1.5px solid var(--g200);
+    }
+    .cam-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 14px 18px; border-bottom: 1px solid var(--g200);
+    }
+    .cam-header span { font-size: 13px; font-weight: 600; color: var(--g600); }
+    .live-dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; animation: breathe 1.4s ease-in-out infinite; }
+    @keyframes breathe { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(.7);opacity:.5} }
+    .cam-body { padding: 14px; }
+
+    .viewfinder {
+      position: relative; width: 100%; aspect-ratio: 4/3;
+      background: #0a0a0a; border-radius: var(--r-md); overflow: hidden;
+    }
+    #liveVideo { width: 100%; height: 100%; object-fit: cover; display: block; }
+    #snapCanvas { display: none; width: 100%; height: 100%; object-fit: cover; }
+
+    .scan-beam {
+      position: absolute; left: 0; width: 100%; height: 2px;
+      background: linear-gradient(90deg,transparent,#22c55e,transparent);
+      box-shadow: 0 0 10px rgba(34,197,94,.7);
+      top: 0; opacity: 0; transition: opacity .3s;
+      animation: scanMove 2.2s linear infinite;
+    }
+    .scan-beam.active { opacity: 1; }
+    @keyframes scanMove { 0%{top:0%} 100%{top:100%} }
+
+    .vf-brackets { position: absolute; inset: 12px; pointer-events: none; }
+    .br { position: absolute; width: 20px; height: 20px; border-color: rgba(255,255,255,.55); border-style: solid; }
+    .br.tl  { top:0;left:0;  border-width:2px 0 0 2px; border-radius:3px 0 0 0; }
+    .br.tr  { top:0;right:0; border-width:2px 2px 0 0; border-radius:0 3px 0 0; }
+    .br.bl  { bottom:0;left:0;  border-width:0 0 2px 2px; border-radius:0 0 0 3px; }
+    .br.br2 { bottom:0;right:0; border-width:0 2px 2px 0; border-radius:0 0 3px 0; }
+
+    .vf-status {
+      position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,.6); color: #fff; font-size: 12px; font-weight: 500;
+      padding: 5px 14px; border-radius: 999px; backdrop-filter: blur(6px); white-space: nowrap;
     }
 
-    @media (max-width: 820px) {
-      .grid { grid-template-columns: 1fr; }
+    .no-cam-msg {
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      gap: 10px; height: 100%; min-height: 200px; text-align: center; padding: 24px;
     }
+    .no-cam-msg .icon { font-size: 40px; }
+    .no-cam-msg p { font-size: 13px; color: var(--g400); line-height: 1.6; }
 
-    /* PANELS */
-    .panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      overflow: hidden;
+    .cam-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .btn-capture {
+      background: var(--black); color: var(--white);
+      font-family: var(--font); font-size: 14px; font-weight: 600;
+      padding: 13px 18px; border-radius: 999px; border: none; cursor: pointer;
+      transition: all var(--ease); box-shadow: 0 4px 16px rgba(0,0,0,.18);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
     }
+    .btn-capture:hover:not(:disabled) { background: var(--g800); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,.22); }
+    .btn-capture:active:not(:disabled) { transform: translateY(0); }
+    .btn-capture:disabled { background: var(--g300); color: var(--g400); cursor: not-allowed; box-shadow: none; }
+    .btn-retake {
+      background: transparent; color: var(--g500);
+      font-family: var(--font); font-size: 14px; font-weight: 500;
+      padding: 13px 18px; border-radius: 999px; border: 1.5px solid var(--g300); cursor: pointer;
+      transition: all var(--ease);
+    }
+    .btn-retake:hover { border-color: var(--g500); color: var(--g700); }
 
-    .panel-head {
-      padding: 14px 18px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
+    /* ── REFERENCE PANEL ──────────────────────── */
+    .ref-card {
+      background: var(--white); border-radius: var(--r-xl);
+      box-shadow: var(--sh-md); border: 1.5px solid var(--g200); overflow: hidden;
+    }
+    .ref-header { padding: 14px 18px; border-bottom: 1px solid var(--g200); }
+    .ref-header-title { font-size: 13px; font-weight: 600; color: var(--g600); }
+    .ref-header-sub   { font-size: 11px; color: var(--g400); margin-top: 2px; }
+
+    /* BIG reference grid */
+    .ref-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
       gap: 8px;
+      padding: 14px;
+      max-height: 480px;
+      overflow-y: auto;
     }
+    @media(max-width:1060px) { .ref-grid { grid-template-columns: repeat(5,1fr); } }
+    @media(max-width:860px)  { .ref-grid { grid-template-columns: repeat(6,1fr); max-height:260px; } }
+    @media(max-width:540px)  { .ref-grid { grid-template-columns: repeat(4,1fr); } }
 
-    .panel-head h2 {
-      font-family: 'Syne', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
+    .ref-grid::-webkit-scrollbar { width: 4px; }
+    .ref-grid::-webkit-scrollbar-track { background: transparent; }
+    .ref-grid::-webkit-scrollbar-thumb { background: var(--g300); border-radius: 999px; }
+
+    .ref-item {
+      border-radius: var(--r-sm); overflow: hidden; cursor: default;
+      border: 2px solid transparent; transition: all var(--ease);
+      background: var(--g100); position: relative;
     }
-
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      animation: pulse 2s ease-in-out infinite;
+    .ref-item.match {
+      border-color: var(--black);
+      box-shadow: 0 0 0 2px var(--black), 0 4px 12px rgba(0,0,0,.2);
+      transform: scale(1.06);
     }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.85); }
+    .ref-item img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+    .ref-item .ref-name {
+      font-size: 8.5px; font-weight: 600; color: var(--g600);
+      text-align: center; padding: 3px 2px; line-height: 1.3; background: var(--white);
     }
-
-    .panel-body {
-      padding: 16px;
+    .ref-item .match-badge {
+      position: absolute; top: 3px; right: 3px;
+      background: var(--black); color: #fff;
+      font-size: 9px; font-weight: 700; padding: 2px 5px;
+      border-radius: 999px; opacity: 0; transition: opacity .2s;
     }
+    .ref-item.match .match-badge { opacity: 1; }
 
-    /* CAMERA */
-    .cam-wrap {
-      position: relative;
-      aspect-ratio: 4/3;
-      background: #020a05;
-      border-radius: 14px;
-      overflow: hidden;
-      border: 1px solid var(--border2);
+    /* ── RESULT ───────────────────────────────── */
+    .result-section {
+      background: var(--white); border-radius: var(--r-xl);
+      box-shadow: var(--sh-xl); overflow: hidden; margin-bottom: 40px;
+      opacity: 0; transform: translateY(24px);
+      transition: all .5s cubic-bezier(.4,0,.2,1); pointer-events: none;
     }
+    .result-section.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
 
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
+    .result-top { display: grid; grid-template-columns: 1fr 1fr; min-height: 280px; }
+    @media(max-width:640px) { .result-top { grid-template-columns: 1fr; } }
+
+    .res-img-side { position: relative; overflow: hidden; background: var(--g100); }
+    .res-img-side img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .res-img-label {
+      position: absolute; bottom: 12px; left: 12px;
+      background: rgba(0,0,0,.55); color: #fff; font-size: 11px; font-weight: 500;
+      padding: 4px 10px; border-radius: 999px; backdrop-filter: blur(6px);
     }
-
-    canvas { display: none; }
-
-    .scan-line {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 2px;
-      background: linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%);
-      box-shadow: 0 0 12px rgba(74,222,128,0.6);
-      opacity: 0;
-      transition: opacity 0.3s;
-      animation: scanmove 2s linear infinite;
+    .res-info { padding: 32px 28px; display: flex; flex-direction: column; justify-content: center; }
+    .res-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em;
+      padding: 5px 12px; border-radius: 999px; margin-bottom: 14px; width: fit-content;
     }
+    .res-product { font-size: 1.65rem; font-weight: 800; letter-spacing: -.03em; color: var(--black); line-height: 1.1; margin-bottom: 6px; }
+    .res-label   { font-size: 13px; color: var(--g400); font-weight: 500; margin-bottom: 4px; }
+    .res-caneca  { font-size: 1.05rem; font-weight: 700; margin-bottom: 14px; }
+    .res-instr   { font-size: 13.5px; color: var(--g500); line-height: 1.65; border-left: 3px solid var(--g200); padding-left: 12px; }
 
-    .scan-line.active { opacity: 1; }
-
-    @keyframes scanmove {
-      0% { top: 0%; }
-      100% { top: 100%; }
-    }
-
-    .cam-overlay {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 12px;
-      pointer-events: none;
-    }
-
-    /* Corner brackets */
-    .brackets {
-      position: absolute;
-      inset: 16px;
-      pointer-events: none;
-    }
-
-    .bracket {
-      position: absolute;
-      width: 24px;
-      height: 24px;
-      border-color: rgba(74,222,128,0.5);
-      border-style: solid;
-    }
-
-    .bracket.tl { top: 0; left: 0; border-width: 2px 0 0 2px; border-radius: 3px 0 0 0; }
-    .bracket.tr { top: 0; right: 0; border-width: 2px 2px 0 0; border-radius: 0 3px 0 0; }
-    .bracket.bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; border-radius: 0 0 0 3px; }
-    .bracket.br { bottom: 0; right: 0; border-width: 0 2px 2px 0; border-radius: 0 0 3px 0; }
-
-    .cam-status-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-    }
-
-    .chip {
-      font-size: 11px;
-      padding: 5px 10px;
-      border-radius: 999px;
-      background: rgba(10,15,13,0.75);
-      border: 1px solid var(--border2);
-      color: var(--text);
-      backdrop-filter: blur(6px);
-      font-weight: 500;
-    }
-
-    .chip.green { color: var(--accent); border-color: rgba(74,222,128,0.25); }
-
-    /* BUTTONS */
-    .btn-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    button {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      padding: 12px 16px;
-      border-radius: 12px;
-      cursor: pointer;
-      border: none;
-      transition: all 0.15s ease;
-    }
-
-    .btn-main {
-      background: var(--accent2);
-      color: #0a1a0f;
-      font-weight: 600;
-    }
-
-    .btn-main:hover:not(:disabled) { background: var(--accent); }
-    .btn-main:active:not(:disabled) { transform: scale(0.98); }
-    .btn-main:disabled { opacity: 0.45; cursor: not-allowed; }
-
-    .btn-sec {
-      background: var(--surface2);
-      color: var(--muted);
-      border: 1px solid var(--border2);
-    }
-
-    .btn-sec:hover { color: var(--text); background: rgba(255,255,255,0.06); }
-
-    /* RESULT */
-    .result-panel {
-      margin-top: 12px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
-      min-height: 90px;
-    }
-
-    .result-label {
-      font-size: 11px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 8px;
-    }
-
-    .result-obj {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin-bottom: 6px;
-      line-height: 1.2;
-    }
-
-    .result-caneca {
-      font-size: 0.88rem;
-      font-weight: 500;
-      margin-bottom: 6px;
-    }
-
-    .result-desc {
-      font-size: 0.85rem;
-      color: var(--muted);
-      line-height: 1.55;
-    }
-
-    /* BINS GRID */
-    .bins-section {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      overflow: hidden;
-    }
-
-    .bins-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      padding: 16px;
-    }
-
-    @media (max-width: 500px) {
-      .bins-grid { grid-template-columns: repeat(2, 1fr); }
-    }
+    /* ── BINS ─────────────────────────────────── */
+    .bins-section { margin-bottom: 40px; }
+    .bins-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+    @media(max-width:640px) { .bins-grid { grid-template-columns: repeat(2,1fr); } }
+    @media(max-width:380px) { .bins-grid { grid-template-columns: 1fr; } }
 
     .bin-card {
-      border-radius: 14px;
-      padding: 14px 10px;
-      text-align: center;
-      border: 2px solid transparent;
-      transition: all 0.22s ease;
-      cursor: default;
-      position: relative;
-      overflow: hidden;
+      background: var(--white); border-radius: var(--r-lg); padding: 20px 16px;
+      border: 2px solid var(--g200); box-shadow: var(--sh-sm); transition: all var(--ease);
     }
+    .bin-card.active { transform: translateY(-4px); box-shadow: var(--sh-lg); }
+    .bin-card.active.vc { border-color: var(--verde); }
+    .bin-card.active.ac { border-color: var(--azul); }
+    .bin-card.active.gc { border-color: var(--gris); }
+    .bin-card.active.rc { border-color: var(--rojo); }
+    .bin-card.active.nc { border-color: var(--naranja); }
+    .bin-card.active.ec { border-color: var(--elec); }
 
-    .bin-card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: 12px;
-      opacity: 0.12;
-    }
+    .bin-circle { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 10px; }
+    .bin-name { font-size: 14px; font-weight: 700; color: var(--black); margin-bottom: 3px; letter-spacing: -.01em; }
+    .bin-sub  { font-size: 11px; font-weight: 600; margin-bottom: 7px; }
+    .bin-mat  { font-size: 11px; color: var(--g400); line-height: 1.5; }
 
-    .bin-card.verde { background: rgba(22,163,74,0.1); }
-    .bin-card.verde::before { background: var(--verde); }
-    .bin-card.azul { background: rgba(37,99,235,0.1); }
-    .bin-card.azul::before { background: var(--azul); }
-    .bin-card.gris { background: rgba(107,114,128,0.1); }
-    .bin-card.gris::before { background: var(--gris); }
-    .bin-card.rojo { background: rgba(220,38,38,0.1); }
-    .bin-card.rojo::before { background: var(--rojo); }
-    .bin-card.naranja { background: rgba(234,88,12,0.1); }
-    .bin-card.naranja::before { background: var(--naranja); }
-    .bin-card.gris_e { background: rgba(55,65,81,0.15); }
-    .bin-card.gris_e::before { background: var(--oscuro); }
-
-    .bin-card.active {
-      transform: translateY(-3px) scale(1.03);
-    }
-
-    .bin-card.active.verde { border-color: var(--verde); box-shadow: 0 0 0 1px rgba(22,163,74,0.3), 0 8px 24px rgba(22,163,74,0.2); }
-    .bin-card.active.azul { border-color: var(--azul); box-shadow: 0 0 0 1px rgba(37,99,235,0.3), 0 8px 24px rgba(37,99,235,0.2); }
-    .bin-card.active.gris { border-color: var(--gris); box-shadow: 0 0 0 1px rgba(107,114,128,0.4), 0 8px 24px rgba(107,114,128,0.15); }
-    .bin-card.active.rojo { border-color: var(--rojo); box-shadow: 0 0 0 1px rgba(220,38,38,0.3), 0 8px 24px rgba(220,38,38,0.2); }
-    .bin-card.active.naranja { border-color: var(--naranja); box-shadow: 0 0 0 1px rgba(234,88,12,0.3), 0 8px 24px rgba(234,88,12,0.2); }
-    .bin-card.active.gris_e { border-color: var(--oscuro); box-shadow: 0 0 0 1px rgba(55,65,81,0.4), 0 8px 24px rgba(55,65,81,0.15); }
-
-    .bin-icon { font-size: 26px; margin-bottom: 6px; position: relative; z-index: 1; }
-
-    .bin-color-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      margin: 0 auto 5px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .bin-name {
-      font-family: 'Syne', sans-serif;
-      font-size: 11px;
-      font-weight: 700;
-      margin-bottom: 3px;
-      position: relative;
-      z-index: 1;
-      color: var(--text);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .bin-mat {
-      font-size: 10px;
-      color: var(--muted);
-      line-height: 1.4;
-      position: relative;
-      z-index: 1;
-    }
-
-    /* FOOTER */
-    .footer {
-      margin-top: 24px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.82rem;
-      line-height: 1.6;
-    }
-
-    .footer strong { color: var(--text); font-weight: 500; }
-
-    /* SPINNER */
-    .spinner {
-      display: inline-block;
-      width: 13px;
-      height: 13px;
-      border: 2px solid rgba(10,26,15,0.35);
-      border-top-color: #0a1a0f;
-      border-radius: 50%;
-      animation: spin 0.65s linear infinite;
-      vertical-align: middle;
-      margin-right: 6px;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* API KEY INPUT */
-    .apikey-wrap {
-      margin-bottom: 16px;
-      background: var(--surface2);
-      border: 1px solid var(--border2);
-      border-radius: 14px;
-      padding: 14px 16px;
-    }
-
-    .apikey-wrap label {
-      display: block;
-      font-size: 11px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 8px;
-    }
-
-    .apikey-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .apikey-row input {
-      flex: 1;
-      background: var(--bg);
-      border: 1px solid var(--border2);
-      border-radius: 10px;
-      padding: 10px 12px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      outline: none;
-    }
-
-    .apikey-row input:focus { border-color: rgba(74,222,128,0.4); }
-
-    .apikey-row input::placeholder { color: var(--muted); }
-
-    .btn-save {
-      background: var(--surface2);
-      color: var(--accent);
-      border: 1px solid rgba(74,222,128,0.25);
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-      white-space: nowrap;
-    }
-
-    .btn-save:hover { background: rgba(74,222,128,0.08); }
-
-    .apikey-note {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 7px;
-      line-height: 1.5;
-    }
+    /* ── ANIMATIONS ───────────────────────────── */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    .camera-section { animation: fadeUp .5s ease both; }
+    .bins-section   { animation: fadeUp .5s .1s ease both; }
+    #step2wrap { opacity: 0; transition: opacity .4s ease; }
+    #step2wrap.show { opacity: 1; }
   </style>
 </head>
 <body>
-  <div class="app">
 
-    <header>
-      <div class="header-top">
-        <div class="logo">♻️</div>
-        <h1>Clasifica<span>Residuos</span></h1>
-      </div>
-      <p class="subtitle">Apunta la cámara a cualquier residuo y la IA te dice exactamente en qué caneca va.</p>
-      <div class="gtc-badge">✦ Basado en norma GTC 24 Colombia</div>
-    </header>
+<!-- HERO -->
+<header class="hero">
+  <h1>Identificador de residuos</h1>
+</header>
 
-    <!-- API KEY -->
-    <div class="apikey-wrap">
-      <label>Clave API de Anthropic</label>
-      <div class="apikey-row">
-        <input type="password" id="apiKey" placeholder="sk-ant-..." />
-        <button class="btn-save" onclick="saveKey()">Guardar</button>
-      </div>
-      <p class="apikey-note">
-        Obtén tu clave en <strong>console.anthropic.com</strong>. Se guarda solo en tu navegador (localStorage) y nunca se envía a ningún servidor externo.
-      </p>
+<main class="main">
+
+  <!-- STEP 1 -->
+  <section class="camera-section">
+    <div class="step-label">
+      <div class="step-num">1</div>
+      <div class="step-title">Apunta la cámara al residuo y captura</div>
     </div>
 
-    <div class="grid">
-      <!-- CAMERA PANEL -->
-      <div class="panel">
-        <div class="panel-head">
-          <div class="dot"></div>
-          <h2>Cámara en vivo</h2>
+    <div class="camera-layout">
+
+      <!-- Viewfinder -->
+      <div class="cam-card">
+        <div class="cam-header">
+          <div class="live-dot"></div>
+          <span>Cámara en vivo</span>
         </div>
-        <div class="panel-body">
-          <div class="cam-wrap">
-            <video id="vid" autoplay playsinline muted></video>
-            <canvas id="cnv"></canvas>
-            <div class="scan-line" id="scanLine"></div>
-            <div class="brackets">
-              <div class="bracket tl"></div>
-              <div class="bracket tr"></div>
-              <div class="bracket bl"></div>
-              <div class="bracket br"></div>
+        <div class="cam-body">
+          <div class="viewfinder" id="viewfinder">
+            <video id="liveVideo" autoplay playsinline muted></video>
+            <canvas id="snapCanvas"></canvas>
+            <div class="scan-beam" id="scanBeam"></div>
+            <div class="vf-brackets">
+              <div class="br tl"></div><div class="br tr"></div>
+              <div class="br bl"></div><div class="br br2"></div>
             </div>
-            <div class="cam-overlay">
-              <div></div>
-              <div class="cam-status-row">
-                <span class="chip" id="camChip">Iniciando…</span>
-                <span class="chip green" id="aiChip" style="display:none">IA lista ✦</span>
-              </div>
+            <div class="vf-status" id="vfStatus">Iniciando cámara…</div>
+            <div class="no-cam-msg" id="noCamMsg">
+              <div class="icon">📵</div>
+              <p>No se pudo acceder a la cámara.<br/>Abre el archivo en Chrome o Safari y permite los permisos.</p>
             </div>
           </div>
-
-          <div class="btn-row">
-            <button class="btn-main" id="btnAnalyze" disabled onclick="analyze()">
-              <span id="btnTxt">Analizar residuo</span>
+          <div class="cam-actions">
+            <button class="btn-capture" id="btnCapture" disabled onclick="capturar()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M20 7h-3l-2-3H9L7 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
+              Capturar foto
             </button>
-            <button class="btn-sec" onclick="resetResult()">Limpiar</button>
+            <button class="btn-retake" id="btnRetake" onclick="reiniciar()" style="display:none">
+              Volver a intentar
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- RESULT PANEL -->
-      <div class="panel">
-        <div class="panel-head">
-          <div class="dot" style="background:#60a5fa;"></div>
-          <h2>Resultado de IA</h2>
+      <!-- Referencias -->
+      <div class="ref-card">
+        <div class="ref-header">
+          <div class="ref-header-title">Residuos de referencia</div>
+          <div class="ref-header-sub">La app compara tu foto con estas imágenes</div>
         </div>
-        <div class="panel-body">
-          <div class="result-panel">
-            <div class="result-label">Objeto detectado</div>
-            <div class="result-obj" id="resObj" style="color:var(--muted)">—</div>
-            <div class="result-caneca" id="resCaneca" style="color:var(--muted)">Presiona "Analizar residuo" para comenzar</div>
-            <div class="result-desc" id="resDesc"></div>
-          </div>
-
-          <div style="margin-top:12px; background:var(--surface2); border:1px solid var(--border); border-radius:14px; padding:16px;">
-            <div class="result-label">Instrucción de descarte</div>
-            <div class="result-desc" id="resInstruccion" style="color:var(--text); font-size:0.9rem; line-height:1.6;">—</div>
-          </div>
-        </div>
+        <div class="ref-grid" id="refGrid"></div>
       </div>
+
     </div>
+  </section>
 
-    <!-- BINS -->
-    <div class="bins-section">
-      <div class="panel-head">
-        <div class="dot" style="background:#a78bfa;"></div>
-        <h2>Contenedores — GTC 24</h2>
-      </div>
-      <div class="bins-grid" id="binsGrid"></div>
-    </div>
-
-    <div class="footer">
-      <p>
-        Clasificación basada en la norma colombiana <strong>GTC 24</strong> de separación en la fuente.<br/>
-        Análisis de imagen con <strong>Claude claude-sonnet-4-20250514 (Anthropic)</strong>. Cámara y clave API permanecen locales en tu dispositivo.
-      </p>
+  <!-- STEP 2: RESULTADO -->
+  <div id="step2wrap">
+    <div class="step-label" style="margin-bottom:18px">
+      <div class="step-num">2</div>
+      <div class="step-title">Resultado de la detección</div>
     </div>
   </div>
+  <section class="result-section" id="resultSection">
+    <div class="result-top">
+      <div class="res-img-side">
+        <img id="resImg" src="" alt=""/>
+        <div class="res-img-label" id="resImgLabel"></div>
+      </div>
+      <div class="res-info">
+        <div class="res-tag"     id="resTag"></div>
+        <div class="res-product" id="resProd"></div>
+        <div class="res-label">Va en la caneca →</div>
+        <div class="res-caneca"  id="resCaneca"></div>
+        <div class="res-instr"   id="resInstr"></div>
+      </div>
+    </div>
+  </section>
 
-  <script>
-    const BINS = [
-      {
-        id: "verde",
-        color: "#16a34a",
-        name: "Verde",
-        label: "Orgánico",
-        materials: "Restos de comida, cáscaras, jardín"
-      },
-      {
-        id: "azul",
-        color: "#2563eb",
-        name: "Azul",
-        label: "Reciclable",
-        materials: "Papel, cartón, plástico, vidrio, metal limpios"
-      },
-      {
-        id: "gris",
-        color: "#6b7280",
-        name: "Gris",
-        label: "No reciclable",
-        materials: "Papel sucio, icopor, empaques mixtos"
-      },
-      {
-        id: "rojo",
-        color: "#dc2626",
-        name: "Rojo",
-        label: "Peligroso",
-        materials: "Medicamentos, pilas, químicos, aerosoles"
-      },
-      {
-        id: "naranja",
-        color: "#ea580c",
-        name: "Naranja",
-        label: "Biosanitario",
-        materials: "Material médico, vendas, jeringas usadas"
-      },
-      {
-        id: "gris_e",
-        color: "#374151",
-        name: "Gris oscuro",
-        label: "Electrónico",
-        materials: "Cables, celulares, computadores, pilas recargables"
-      }
-    ];
+  <!-- STEP 3: CANECAS -->
+  <section class="bins-section">
+    <div class="step-label">
+      <div class="step-num">3</div>
+      <div class="step-title">¿En qué caneca se tira?</div>
+    </div>
+    <div class="bins-grid" id="binsGrid"></div>
+  </section>
 
-    // Build bin cards
-    const grid = document.getElementById("binsGrid");
-    BINS.forEach(b => {
-      const d = document.createElement("div");
-      d.className = `bin-card ${b.id}`;
-      d.id = "bin-" + b.id;
-      d.innerHTML = `
-        <div class="bin-color-dot" style="background:${b.color}"></div>
-        <div class="bin-name">${b.name}</div>
-        <div class="bin-mat">${b.label}<br/><span style="font-size:9px;opacity:0.65">${b.materials.split(",")[0]}…</span></div>
-      `;
-      grid.appendChild(d);
+</main>
+
+<script>
+/* =====================================================
+   CANECAS GTC 24
+===================================================== */
+const CANECAS = {
+  verde:   { nombre:"Caneca Verde",   sub:"Orgánicos",        color:"#2d6a2d", light:"#e8f5e9", emoji:"🟢", cls:"vc", mat:"Restos de comida, cáscaras, jardín, biodegradables" },
+  azul:    { nombre:"Caneca Azul",    sub:"Reciclables",      color:"#1a56a0", light:"#e3efff", emoji:"🔵", cls:"ac", mat:"Papel, cartón, plástico, vidrio, metal (limpios)" },
+  gris:    { nombre:"Caneca Gris",    sub:"No aprovechables", color:"#5c5c5c", light:"#f0f0f0", emoji:"⚫", cls:"gc", mat:"Papel sucio, icopor, empaques mixtos, colillas" },
+  rojo:    { nombre:"Caneca Roja",    sub:"Peligrosos",       color:"#c0392b", light:"#fdecea", emoji:"🔴", cls:"rc", mat:"Medicamentos, pilas, químicos, aerosoles" },
+  naranja: { nombre:"Caneca Naranja", sub:"Biosanitarios",    color:"#c05c00", light:"#fff3e0", emoji:"🟠", cls:"nc", mat:"Jeringas, vendas con sangre, material médico" },
+  elec:    { nombre:"Punto RAEE",     sub:"Electrónicos",     color:"#2c3e70", light:"#e8ebf7", emoji:"🔌", cls:"ec", mat:"Cables, celulares, computadores, pilas recargables" },
+};
+
+/* =====================================================
+   PRODUCTOS (residuos colombianos comunes)
+   colorProfile = color dominante REAL del objeto
+   R, G, B  0-255
+===================================================== */
+const PRODUCTOS = [
+  /* ── ORGÁNICOS ────────────────────────── */
+  {
+    id:"cascara_platano", nombre:"Cáscara de plátano", hint:"Orgánico",
+    img:"https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400&q=80",
+    cp:{r:215,g:188,b:38}, caneca:"verde",
+    instr:"Deposítala en la caneca verde. Puedes también usarla para compostaje casero."
+  },
+  {
+    id:"cascara_naranja", nombre:"Cáscara de naranja/mandarina", hint:"Orgánico",
+    img:"https://images.unsplash.com/photo-1547514701-42782101795e?w=400&q=80",
+    cp:{r:230,g:120,b:30}, caneca:"verde",
+    instr:"Va en la caneca verde. Las cáscaras cítricas son biodegradables."
+  },
+  {
+    id:"cascara_aguacate", nombre:"Semilla de aguacate", hint:"Orgánico",
+    img:"https://images.unsplash.com/photo-1601039641847-7857b994d704?w=400&q=80",
+    cp:{r:90,g:55,b:30}, caneca:"verde",
+    instr:"Deposítala en la caneca verde. Es materia orgánica biodegradable."
+  },
+  {
+    id:"restos_comida", nombre:"Restos de comida", hint:"Orgánico",
+    img:"https://images.unsplash.com/photo-1606859222032-c8e5a793a0d8?w=400&q=80",
+    cp:{r:170,g:110,b:65}, caneca:"verde",
+    instr:"Deposítalos en la caneca verde. Escúrrelos un poco antes para reducir humedad."
+  },
+  {
+    id:"panela", nombre:"Residuos de panela/caña", hint:"Orgánico",
+    img:"https://images.unsplash.com/photo-1594498653385-d5172c532c00?w=400&q=80",
+    cp:{r:160,g:105,b:45}, caneca:"verde",
+    instr:"Va en la caneca verde. Es residuo orgánico de origen vegetal."
+  },
+  {
+    id:"hojas_cafe", nombre:"Residuos de café/filtros", hint:"Orgánico",
+    img:"https://images.unsplash.com/photo-1559496417-e7f25cb247f3?w=400&q=80",
+    cp:{r:95,g:60,b:35}, caneca:"verde",
+    instr:"El café molido y los filtros de papel van en la caneca verde. Son compostables."
+  },
+  {
+    id:"yuca_papa", nombre:"Cáscara de papa/yuca", hint:"Orgánico",
+    img:"https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400&q=80",
+    cp:{r:200,g:170,b:110}, caneca:"verde",
+    instr:"Van en la caneca verde. Son residuos biodegradables de tubérculos."
+  },
+  {
+    id:"hierbas", nombre:"Hierbas y plantas", hint:"Orgánico",
+    img:"https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&q=80",
+    cp:{r:70,g:130,b:60}, caneca:"verde",
+    instr:"Deposítalas en la caneca verde. Flores, hojas y ramas pequeñas son orgánicas."
+  },
+
+  /* ── RECICLABLES (AZUL) ───────────────── */
+  {
+    id:"botella_pet", nombre:"Botella de plástico PET", hint:"Reciclable",
+    img:"https://images.unsplash.com/photo-1605600659873-d808a13e4d9a?w=400&q=80",
+    cp:{r:200,g:228,b:242}, caneca:"azul",
+    instr:"Enjuágala y deposítala en la caneca azul. Retira la tapa si es posible."
+  },
+  {
+    id:"bolsa_plastico", nombre:"Bolsa de plástico limpia", hint:"Reciclable",
+    img:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80",
+    cp:{r:225,g:235,b:240}, caneca:"azul",
+    instr:"Solo si está limpia y seca, va en la caneca azul. Si está sucia, va en la gris."
+  },
+  {
+    id:"carton", nombre:"Caja de cartón", hint:"Reciclable",
+    img:"https://images.unsplash.com/photo-1553413077-190dd305871c?w=400&q=80",
+    cp:{r:188,g:148,b:92}, caneca:"azul",
+    instr:"Aplánala y deposítala en la caneca azul. Debe estar seca y limpia."
+  },
+  {
+    id:"vidrio", nombre:"Botella de vidrio", hint:"Reciclable",
+    img:"https://images.unsplash.com/photo-1581375321224-79da6fd32f6e?w=400&q=80",
+    cp:{r:138,g:175,b:128}, caneca:"azul",
+    instr:"Enjuágala y deposítala en la caneca azul. El vidrio es 100% reciclable."
+  },
+  {
+    id:"lata_aluminio", nombre:"Lata de aluminio", hint:"Reciclable",
+    img:"https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=400&q=80",
+    cp:{r:192,g:196,b:202}, caneca:"azul",
+    instr:"Enjuágala, aplástala y deposítala en la caneca azul."
+  },
+  {
+    id:"papel_limpio", nombre:"Papel limpio / cuaderno", hint:"Reciclable",
+    img:"https://images.unsplash.com/photo-1568667256549-094345857637?w=400&q=80",
+    cp:{r:246,g:242,b:232}, caneca:"azul",
+    instr:"Va en la caneca azul si está limpio y seco. Papel con grasa o mojado va en la gris."
+  },
+  {
+    id:"periodico", nombre:"Periódico / revista", hint:"Reciclable",
+    img:"https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=80",
+    cp:{r:200,g:192,b:175}, caneca:"azul",
+    instr:"Van en la caneca azul. Si están mojados o muy sucios, van en la gris."
+  },
+  {
+    id:"lata_atun", nombre:"Lata de atún / conserva", hint:"Reciclable",
+    img:"https://images.unsplash.com/photo-1535016120720-40c646be5580?w=400&q=80",
+    cp:{r:170,g:175,b:180}, caneca:"azul",
+    instr:"Enjuágala bien y llévala a la caneca azul. El metal es altamente reciclable."
+  },
+  {
+    id:"tetrapack", nombre:"Tetrapack (jugos/leche)", hint:"Reciclable",
+    img:"https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&q=80",
+    cp:{r:240,g:220,b:80}, caneca:"azul",
+    instr:"Enjuágalo, aplástalo y deposítalo en la caneca azul. Retira el pitillo."
+  },
+  {
+    id:"envase_plastico", nombre:"Envase/tarro plástico limpio", hint:"Reciclable",
+    img:"https://images.unsplash.com/photo-1585421514738-01798e348b17?w=400&q=80",
+    cp:{r:78,g:122,b:165}, caneca:"azul",
+    instr:"Enjuágalo bien y llévalo a la caneca azul. Solo si está limpio."
+  },
+
+  /* ── NO APROVECHABLES (GRIS) ──────────── */
+  {
+    id:"servilleta", nombre:"Servilleta / papel de cocina usados", hint:"No reciclable",
+    img:"https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&q=80",
+    cp:{r:232,g:222,b:205}, caneca:"gris",
+    instr:"Va a la caneca gris. El papel con grasa o húmedo no se puede reciclar."
+  },
+  {
+    id:"icopor", nombre:"Icopor / espuma de poliestireno", hint:"No reciclable",
+    img:"https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400&q=80",
+    cp:{r:245,g:245,b:248}, caneca:"gris",
+    instr:"Va en la caneca gris. El icopor no es reciclable en Colombia actualmente."
+  },
+  {
+    id:"colilla", nombre:"Colilla de cigarrillo", hint:"No reciclable",
+    img:"https://images.unsplash.com/photo-1567336273898-ebbf9eb3c3bf?w=400&q=80",
+    cp:{r:165,g:130,b:100}, caneca:"gris",
+    instr:"Va en la caneca gris. Nunca al suelo ni al sanitario, contamina el agua."
+  },
+  {
+    id:"papel_sucio", nombre:"Papel sucio / empaque con residuo", hint:"No reciclable",
+    img:"https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=400&q=80",
+    cp:{r:200,g:185,b:155}, caneca:"gris",
+    instr:"Va en la caneca gris. El papel contaminado con grasa o comida no se recicla."
+  },
+  {
+    id:"pajilla", nombre:"Pitillo / pajilla plástica", hint:"No reciclable",
+    img:"https://images.unsplash.com/photo-1562887245-b8ef6f56c6ab?w=400&q=80",
+    cp:{r:220,g:80,b:80}, caneca:"gris",
+    instr:"Va en la caneca gris. Los pitillos son difíciles de reciclar y contaminan."
+  },
+
+  /* ── PELIGROSOS (ROJO) ────────────────── */
+  {
+    id:"pila", nombre:"Pila / batería usada", hint:"Peligroso",
+    img:"https://images.unsplash.com/photo-1609275456521-b6cfb55c5d5b?w=400&q=80",
+    cp:{r:52,g:52,b:58}, caneca:"rojo",
+    instr:"Llévala al punto de recolección de pilas más cercano. Nunca a la basura común."
+  },
+  {
+    id:"medicamento", nombre:"Medicamento vencido", hint:"Peligroso",
+    img:"https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&q=80",
+    cp:{r:208,g:208,b:215}, caneca:"rojo",
+    instr:"Llévalo a la farmacia o punto RESPEL. Nunca lo deseches por el lavamanos."
+  },
+  {
+    id:"aerosol", nombre:"Aerosol / desodorante spray", hint:"Peligroso",
+    img:"https://images.unsplash.com/photo-1627384113972-f8c84a0b9ab6?w=400&q=80",
+    cp:{r:180,g:195,b:210}, caneca:"rojo",
+    instr:"Aunque esté vacío, deposítalo en la caneca roja o punto de recolección especial."
+  },
+  {
+    id:"aceite_cocina", nombre:"Aceite de cocina usado", hint:"Peligroso",
+    img:"https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400&q=80",
+    cp:{r:215,g:175,b:55}, caneca:"rojo",
+    instr:"Guárdalo en un recipiente tapado y llévalo a un punto de recolección de aceite."
+  },
+  {
+    id:"pinturas", nombre:"Pintura / barniz sobrante", hint:"Peligroso",
+    img:"https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=400&q=80",
+    cp:{r:60,g:100,b:180}, caneca:"rojo",
+    instr:"Es un residuo peligroso. Llévalo al punto RESPEL más cercano de tu ciudad."
+  },
+
+  /* ── ELECTRÓNICOS (RAEE) ──────────────── */
+  {
+    id:"celular", nombre:"Celular dañado", hint:"Electrónico",
+    img:"https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=400&q=80",
+    cp:{r:44,g:44,b:50}, caneca:"elec",
+    instr:"Llévalo al punto RAEE de Claro, Movistar o Tigo. Nunca a la basura común."
+  },
+  {
+    id:"cable", nombre:"Cable / cargador dañado", hint:"Electrónico",
+    img:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80",
+    cp:{r:35,g:35,b:38}, caneca:"elec",
+    instr:"Va al punto RAEE. Los cables contienen metales valiosos recuperables."
+  },
+  {
+    id:"computador", nombre:"Teclado / periférico dañado", hint:"Electrónico",
+    img:"https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=400&q=80",
+    cp:{r:68,g:68,b:75}, caneca:"elec",
+    instr:"Llévalo a un punto RAEE. Las alcaldías tienen jornadas de recolección periódicas."
+  },
+  {
+    id:"bombillo", nombre:"Bombillo / lámpara dañada", hint:"Electrónico",
+    img:"https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=400&q=80",
+    cp:{r:215,g:205,b:165}, caneca:"elec",
+    instr:"Los bombillos LED y fluorescentes van al punto RAEE, no a la basura común."
+  },
+];
+
+/* =====================================================
+   RENDER: REFERENCIAS
+===================================================== */
+const refGrid = document.getElementById("refGrid");
+PRODUCTOS.forEach(p => {
+  const d = document.createElement("div");
+  d.className = "ref-item";
+  d.id = "ref-" + p.id;
+  d.innerHTML = `
+    <div class="match-badge">✓</div>
+    <img src="${p.img}" alt="${p.nombre}" loading="lazy"/>
+    <div class="ref-name">${p.nombre}</div>
+  `;
+  refGrid.appendChild(d);
+});
+
+/* =====================================================
+   RENDER: CANECAS
+===================================================== */
+const binsGrid = document.getElementById("binsGrid");
+Object.entries(CANECAS).forEach(([k,c]) => {
+  const d = document.createElement("div");
+  d.className = `bin-card ${c.cls}`;
+  d.id = "bin-" + k;
+  d.innerHTML = `
+    <div class="bin-circle" style="background:${c.light};color:${c.color}">${c.emoji}</div>
+    <div class="bin-name">${c.nombre}</div>
+    <div class="bin-sub" style="color:${c.color}">${c.sub}</div>
+    <div class="bin-mat">${c.mat}</div>
+  `;
+  binsGrid.appendChild(d);
+});
+
+/* =====================================================
+   CÁMARA
+===================================================== */
+const video    = document.getElementById("liveVideo");
+const canvas   = document.getElementById("snapCanvas");
+const scanBeam = document.getElementById("scanBeam");
+const vfStatus = document.getElementById("vfStatus");
+const noCamMsg = document.getElementById("noCamMsg");
+const btnCap   = document.getElementById("btnCapture");
+const btnRet   = document.getElementById("btnRetake");
+let streamActive = false;
+
+async function startCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode:"environment", width:{ideal:1280}, height:{ideal:960} },
+      audio: false
     });
+    video.srcObject = stream;
+    video.style.display = "block";
+    noCamMsg.style.display = "none";
+    video.onloadedmetadata = () => {
+      vfStatus.textContent = "Cámara lista — apunta al residuo";
+      scanBeam.classList.add("active");
+      btnCap.disabled = false;
+      streamActive = true;
+    };
+  } catch(e) {
+    video.style.display = "none";
+    noCamMsg.style.display = "flex";
+    vfStatus.style.display = "none";
+    scanBeam.classList.remove("active");
+  }
+}
+startCamera();
 
-    // API key
-    const keyInput = document.getElementById("apiKey");
-    const stored = localStorage.getItem("anthropic_key");
-    if (stored) { keyInput.value = stored; }
-
-    function saveKey() {
-      const k = keyInput.value.trim();
-      if (k) {
-        localStorage.setItem("anthropic_key", k);
-        document.getElementById("aiChip").style.display = "inline";
-        alert("Clave guardada. ¡Listo para analizar!");
-      }
+/* =====================================================
+   DETECCIÓN POR COLOR (múltiples zonas + ponderación)
+===================================================== */
+function sampleZone(data, imgW, x, y, w, h) {
+  let r=0, g=0, b=0, n=0;
+  for(let py=y; py<y+h; py++) {
+    for(let px=x; px<x+w; px++) {
+      const i=(py*imgW+px)*4;
+      r+=data[i]; g+=data[i+1]; b+=data[i+2]; n++;
     }
-
-    // Camera
-    const vid = document.getElementById("vid");
-    const cnv = document.getElementById("cnv");
-    const scanLine = document.getElementById("scanLine");
-    const camChip = document.getElementById("camChip");
-    const aiChip = document.getElementById("aiChip");
-    const btnAnalyze = document.getElementById("btnAnalyze");
-
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false })
-      .then(stream => {
-        vid.srcObject = stream;
-        vid.onloadedmetadata = () => {
-          camChip.textContent = "Cámara activa";
-          btnAnalyze.disabled = false;
-          if (localStorage.getItem("anthropic_key")) {
-            aiChip.style.display = "inline";
-          }
-        };
-      })
-      .catch(() => {
-        camChip.textContent = "Sin acceso a cámara";
-        document.getElementById("resCaneca").textContent = "No se pudo abrir la cámara. Verifica permisos del navegador.";
-      });
-
-    function captureFrame() {
-      cnv.width = vid.videoWidth || 640;
-      cnv.height = vid.videoHeight || 480;
-      cnv.getContext("2d").drawImage(vid, 0, 0);
-      return cnv.toDataURL("image/jpeg", 0.82).split(",")[1];
-    }
-
-    function clearBins() {
-      BINS.forEach(b => document.getElementById("bin-" + b.id).classList.remove("active"));
-    }
-
-    function activateBin(id) {
-      clearBins();
-      const el = document.getElementById("bin-" + id);
-      if (el) el.classList.add("active");
-    }
-
-    async function analyze() {
-      const apiKey = (keyInput.value || localStorage.getItem("anthropic_key") || "").trim();
-      if (!apiKey) {
-        alert("Primero ingresa tu clave API de Anthropic.");
-        return;
-      }
-
-      btnAnalyze.disabled = true;
-      document.getElementById("btnTxt").innerHTML = '<span class="spinner"></span>Analizando…';
-      scanLine.classList.add("active");
-      clearBins();
-
-      const resObj = document.getElementById("resObj");
-      const resCaneca = document.getElementById("resCaneca");
-      const resDesc = document.getElementById("resDesc");
-      const resInstruccion = document.getElementById("resInstruccion");
-
-      resObj.style.color = "var(--muted)";
-      resObj.textContent = "Identificando…";
-      resCaneca.textContent = "Consultando IA…";
-      resDesc.textContent = "";
-      resInstruccion.textContent = "—";
-
-      const imageData = captureFrame();
-
-      const systemPrompt = `Eres un experto en clasificación de residuos para Colombia, basado estrictamente en la norma GTC 24.
-Analiza la imagen y responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional, sin explicaciones, sin backticks, con esta estructura exacta:
-{
-  "encontrado": true,
-  "objeto": "nombre del objeto detectado en español (ej: botella de plástico, cáscara de plátano, pila alcalina)",
-  "categoria": "una de estas exactamente: verde, azul, gris, rojo, naranja, gris_e",
-  "caneca": "nombre completo de la caneca según GTC 24",
-  "razon": "una oración corta explicando por qué va ahí",
-  "instruccion": "instrucción práctica de cómo desecharlo correctamente, máximo 2 oraciones"
+  }
+  return n ? {r:r/n, g:g/n, b:b/n} : {r:0,g:0,b:0};
 }
 
-Si la imagen está vacía, borrosa o no hay ningún residuo visible, responde:
-{"encontrado": false}
+function dist(a,b) {
+  return Math.sqrt((a.r-b.r)**2 + (a.g-b.g)**2 + (a.b-b.b)**2);
+}
 
-Categorías GTC 24:
-- verde: residuos orgánicos biodegradables (comida, jardín, madera, papel sucio no reciclable)
-- azul: aprovechables limpios (papel limpio, cartón, plástico, vidrio, metales, envases limpios)
-- gris: no aprovechables ordinarios (papel higiénico, toallas, icopor, papel sucio, empaques con residuos)
-- rojo: residuos peligrosos (pilas, medicamentos vencidos, químicos, aerosoles, pinturas, aceites)
-- naranja: residuos biosanitarios o infecciosos (jeringas usadas, vendas con sangre, material médico)
-- gris_e: residuos de aparatos eléctricos y electrónicos (RAEE)`;
+function getSignature(ctx, W, H) {
+  const d = ctx.getImageData(0,0,W,H).data;
+  // 5 zonas: centro (doble peso), cuatro cuadrantes
+  const cX=Math.floor(W*.2),  cY=Math.floor(H*.2);
+  const cW=Math.floor(W*.6),  cH=Math.floor(H*.6);
+  const center = sampleZone(d,W,cX,cY,cW,cH);
+  const q1 = sampleZone(d,W,0,          0,           Math.floor(W/2), Math.floor(H/2));
+  const q2 = sampleZone(d,W,Math.floor(W/2),0,       Math.floor(W/2), Math.floor(H/2));
+  const q3 = sampleZone(d,W,0,          Math.floor(H/2), Math.floor(W/2), Math.floor(H/2));
+  const q4 = sampleZone(d,W,Math.floor(W/2),Math.floor(H/2),Math.floor(W/2),Math.floor(H/2));
+  // centro tiene peso 4, cada cuadrante peso 1 → total 8
+  return {
+    r:(center.r*4+q1.r+q2.r+q3.r+q4.r)/8,
+    g:(center.g*4+q1.g+q2.g+q3.g+q4.g)/8,
+    b:(center.b*4+q1.b+q2.b+q3.b+q4.b)/8,
+  };
+}
 
-      try {
-        const resp = await fetch("https://api.anthropic.com/v1/messages", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": apiKey,
-            "anthropic-version": "2023-06-01",
-            "anthropic-dangerous-direct-browser-access": "true"
-          },
-          body: JSON.stringify({
-            model: "claude-sonnet-4-20250514",
-            max_tokens: 400,
-            system: systemPrompt,
-            messages: [{
-              role: "user",
-              content: [
-                { type: "image", source: { type: "base64", media_type: "image/jpeg", data: imageData } },
-                { type: "text", text: "¿Qué residuo es este y en qué caneca va según la norma GTC 24 de Colombia?" }
-              ]
-            }]
-          })
-        });
+function detectar(captured) {
+  return PRODUCTOS.reduce((best, p) => {
+    const d = dist(captured, p.cp);
+    return d < best.dist ? {producto:p, dist:d} : best;
+  }, {producto:PRODUCTOS[0], dist:Infinity}).producto;
+}
 
-        const data = await resp.json();
+/* =====================================================
+   CAPTURA
+===================================================== */
+function capturar() {
+  if(!streamActive) return;
+  const W = video.videoWidth  || 640;
+  const H = video.videoHeight || 480;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video,0,0,W,H);
 
-        if (data.error) {
-          throw new Error(data.error.message || "Error de API");
-        }
+  const sig = getSignature(ctx,W,H);
+  const producto = detectar(sig);
 
-        const raw = data.content?.find(c => c.type === "text")?.text || "{}";
-        const clean = raw.replace(/```json|```/g, "").trim();
-        const res = JSON.parse(clean);
+  // Freeze frame
+  scanBeam.classList.remove("active");
+  video.pause(); video.style.display="none";
+  canvas.style.display="block";
+  canvas.style.width="100%"; canvas.style.height="100%";
+  canvas.style.objectFit="cover";
+  vfStatus.textContent = `Detectado: ${producto.nombre}`;
+  btnCap.style.display="none";
+  btnRet.style.display="block";
 
-        if (!res.encontrado) {
-          resObj.style.color = "var(--muted)";
-          resObj.textContent = "Sin residuo detectado";
-          resCaneca.style.color = "var(--muted)";
-          resCaneca.textContent = "Acerca el objeto a la cámara e intenta de nuevo.";
-          resDesc.textContent = "";
-          resInstruccion.textContent = "—";
-        } else {
-          const bin = BINS.find(b => b.id === res.categoria);
-          resObj.style.color = bin ? bin.color : "var(--text)";
-          resObj.textContent = res.objeto;
-          resCaneca.style.color = bin ? bin.color : "var(--text)";
-          resCaneca.textContent = `→ ${res.caneca}`;
-          resDesc.textContent = res.razon;
-          resInstruccion.textContent = res.instruccion;
-          activateBin(res.categoria);
-        }
+  mostrarResultado(producto);
+}
 
-      } catch (e) {
-        resObj.style.color = "#dc2626";
-        resObj.textContent = "Error al analizar";
-        resCaneca.style.color = "var(--muted)";
-        resCaneca.textContent = "Verifica tu clave API y tu conexión a internet.";
-        resDesc.textContent = String(e);
-        resInstruccion.textContent = "—";
-      }
+/* =====================================================
+   RESULTADO
+===================================================== */
+function mostrarResultado(p) {
+  const c = CANECAS[p.caneca];
 
-      scanLine.classList.remove("active");
-      btnAnalyze.disabled = false;
-      document.getElementById("btnTxt").textContent = "Analizar residuo";
-    }
+  document.querySelectorAll(".ref-item").forEach(el => el.classList.remove("match"));
+  const refEl = document.getElementById("ref-"+p.id);
+  if(refEl) { refEl.classList.add("match"); refEl.scrollIntoView({behavior:"smooth",block:"nearest"}); }
 
-    function resetResult() {
-      clearBins();
-      const resObj = document.getElementById("resObj");
-      resObj.style.color = "var(--muted)";
-      resObj.textContent = "—";
-      document.getElementById("resCaneca").style.color = "var(--muted)";
-      document.getElementById("resCaneca").textContent = 'Presiona "Analizar residuo" para comenzar';
-      document.getElementById("resDesc").textContent = "";
-      document.getElementById("resInstruccion").textContent = "—";
-    }
-  </script>
+  document.getElementById("resImg").src         = p.img;
+  document.getElementById("resImg").alt         = p.nombre;
+  document.getElementById("resImgLabel").textContent = p.nombre;
+
+  const tag = document.getElementById("resTag");
+  tag.textContent = c.emoji+" "+c.sub;
+  tag.style.background = c.light; tag.style.color = c.color;
+
+  document.getElementById("resProd").textContent  = p.nombre;
+  const rc = document.getElementById("resCaneca");
+  rc.textContent = c.nombre; rc.style.color = c.color;
+  document.getElementById("resInstr").textContent = "💡 "+p.instr;
+
+  document.getElementById("step2wrap").classList.add("show");
+  document.getElementById("resultSection").classList.add("visible");
+
+  document.querySelectorAll(".bin-card").forEach(b=>b.classList.remove("active"));
+  const binEl = document.getElementById("bin-"+p.caneca);
+  if(binEl) binEl.classList.add("active");
+
+  setTimeout(()=>{ document.getElementById("resultSection").scrollIntoView({behavior:"smooth",block:"start"}); },200);
+  setTimeout(()=>{ if(binEl) binEl.scrollIntoView({behavior:"smooth",block:"center"}); },900);
+}
+
+/* =====================================================
+   REINICIAR
+===================================================== */
+function reiniciar() {
+  canvas.style.display="none";
+  video.style.display="block"; video.play();
+  scanBeam.classList.add("active");
+  vfStatus.textContent="Cámara lista — apunta al residuo";
+  btnCap.style.display="block"; btnRet.style.display="none";
+
+  document.querySelectorAll(".ref-item").forEach(el=>el.classList.remove("match"));
+  document.querySelectorAll(".bin-card").forEach(b=>b.classList.remove("active"));
+  document.getElementById("resultSection").classList.remove("visible");
+  document.getElementById("step2wrap").classList.remove("show");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+</script>
 </body>
 </html>
