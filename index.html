@@ -1,779 +1,1082 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Identificador de Residuos</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Inventario">
+<meta name="theme-color" content="#F5F5F7">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Inventario de Ingredientes</title>
+<style>
+  :root{
+    --bg:#F5F5F7;
+    --surface:#FFFFFF;
+    --surface-soft:#FBFBFD;
+    --text-primary:#1D1D1F;
+    --text-secondary:#6E6E73;
+    --text-tertiary:#A1A1A6;
+    --border:#E5E5EA;
+    --accent:#0071E3;
+    --accent-dark:#0058B0;
+    --green:#2FB350;
+    --green-bg:#E6F7EA;
+    --orange:#FF9500;
+    --orange-bg:#FFF3E0;
+    --red:#FF3B30;
+    --red-bg:#FFEBEA;
+    --radius-lg:20px;
+    --radius-md:14px;
+    --radius-sm:10px;
+    --shadow:0 1px 2px rgba(0,0,0,0.04), 0 6px 18px rgba(0,0,0,0.06);
+    --safe-top:env(safe-area-inset-top,0px);
+    --safe-bottom:env(safe-area-inset-bottom,0px);
+  }
 
-    :root {
-      --white:   #ffffff;
-      --off:     #f5f5f7;
-      --g100:    #f2f2f2;
-      --g200:    #e5e5e5;
-      --g300:    #d4d4d4;
-      --g400:    #a3a3a3;
-      --g500:    #737373;
-      --g600:    #525252;
-      --g800:    #262626;
-      --black:   #0a0a0a;
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
-      --verde:   #2d6a2d; --verde-l:   #e8f5e9;
-      --azul:    #1a56a0; --azul-l:    #e3efff;
-      --gris:    #5c5c5c; --gris-l:    #f0f0f0;
-      --rojo:    #c0392b; --rojo-l:    #fdecea;
-      --naranja: #c05c00; --naranja-l: #fff3e0;
-      --elec:    #2c3e70; --elec-l:    #e8ebf7;
+  html,body{
+    margin:0; padding:0;
+    background:var(--bg);
+    color:var(--text-primary);
+    font-family:-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overscroll-behavior-y:contain;
+  }
 
-      --r-sm: 10px; --r-md: 16px; --r-lg: 22px; --r-xl: 30px;
-      --sh-sm: 0 1px 4px rgba(0,0,0,.07);
-      --sh-md: 0 4px 16px rgba(0,0,0,.08);
-      --sh-lg: 0 12px 40px rgba(0,0,0,.10);
-      --sh-xl: 0 24px 64px rgba(0,0,0,.12);
-      --ease:  .32s cubic-bezier(.4,0,.2,1);
-      --font:  'Plus Jakarta Sans', system-ui, sans-serif;
-    }
+  button, input, select, textarea{ font-family:inherit; }
+  ::selection{ background:rgba(0,113,227,0.18); }
 
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: var(--font);
-      background: var(--off);
-      color: var(--g800);
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
-    }
+  /* ---------- Top bar (mobile-first) ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:40;
+    background:rgba(245,245,247,0.86);
+    backdrop-filter:saturate(180%) blur(20px);
+    -webkit-backdrop-filter:saturate(180%) blur(20px);
+    border-bottom:1px solid var(--border);
+    padding-top:var(--safe-top);
+  }
+  .topbar-row1{
+    padding:12px 16px 8px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .brand{ flex:1; min-width:0; }
+  .brand-name{
+    font-size:22px; font-weight:800; letter-spacing:-0.02em;
+    border:none; background:transparent; color:var(--text-primary);
+    padding:0; margin:0; width:100%; outline:none;
+  }
+  .brand-sub{ font-size:12px; color:var(--text-tertiary); margin-top:1px; display:flex; align-items:center; gap:5px; }
+  .sync-dot{ width:7px; height:7px; border-radius:50%; background:var(--text-tertiary); flex:0 0 auto; }
+  .sync-dot.on{ background:var(--green); }
+  .sync-dot.syncing{ background:var(--accent); animation:pulse 1s infinite ease-in-out; }
+  .sync-dot.off{ background:var(--text-tertiary); }
+  @keyframes pulse{ 0%,100%{ opacity:1;} 50%{ opacity:0.35;} }
 
-    /* ── HERO ─────────────────────────────────── */
-    .hero {
-      background: var(--white);
-      border-bottom: 1px solid var(--g200);
-      padding: 44px 24px 36px;
-      text-align: center;
-    }
-    .hero h1 {
-      font-size: clamp(2rem, 5vw, 3.4rem);
-      font-weight: 800;
-      letter-spacing: -.03em;
-      line-height: 1.08;
-      color: var(--black);
-      margin-bottom: 0;
-    }
+  .icon-round{
+    width:38px; height:38px; border-radius:50%; flex:0 0 auto;
+    border:1px solid var(--border); background:var(--surface);
+    display:flex; align-items:center; justify-content:center; color:var(--text-secondary);
+    cursor:pointer;
+  }
+  .icon-round svg{ width:18px; height:18px; }
+  .icon-round:active{ background:#EFEFF1; }
 
-    /* ── MAIN ─────────────────────────────────── */
-    .main { width: min(1120px, 96vw); margin: 0 auto; padding: 40px 0 80px; }
+  .topbar-row2{ padding:0 16px 12px; }
+  .search-wrap{ position:relative; }
+  .search-wrap input{
+    width:100%; padding:11px 14px 11px 36px;
+    border-radius:12px; border:1px solid var(--border);
+    background:var(--surface); font-size:15px; color:var(--text-primary);
+    outline:none; -webkit-appearance:none; appearance:none;
+  }
+  .search-wrap input:focus{ border-color:var(--accent); box-shadow:0 0 0 4px rgba(0,113,227,0.12); }
+  .search-icon{
+    position:absolute; left:12px; top:50%; transform:translateY(-50%);
+    width:16px; height:16px; color:var(--text-tertiary); pointer-events:none;
+  }
 
-    /* ── STEP LABEL ───────────────────────────── */
-    .step-label { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
-    .step-num {
-      width: 28px; height: 28px; background: var(--black); color: var(--white);
-      border-radius: 50%; font-size: 13px; font-weight: 700;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .step-title { font-size: 15px; font-weight: 600; color: var(--g600); letter-spacing: -.01em; }
+  /* ---------- Reminder banner ---------- */
+  .banner-wrap{ padding:0 16px; }
+  .banner{
+    margin-top:12px;
+    background:linear-gradient(135deg,#FFF6EC,#FFEFE0);
+    border:1px solid #FFD9A8;
+    border-radius:var(--radius-md);
+    padding:13px 15px;
+    display:flex; align-items:flex-start; gap:11px;
+    animation:slideDown .3s ease;
+  }
+  @keyframes slideDown{ from{ opacity:0; transform:translateY(-6px);} to{ opacity:1; transform:translateY(0);} }
+  .banner-icon{
+    width:30px; height:30px; flex:0 0 auto; border-radius:9px;
+    background:var(--orange); display:flex; align-items:center; justify-content:center;
+  }
+  .banner-icon svg{ width:16px; height:16px; color:#fff; }
+  .banner-text{ flex:1; min-width:0; }
+  .banner-title{ font-size:13.5px; font-weight:700; color:#7A3E00; margin-bottom:2px; }
+  .banner-list{ font-size:12.5px; color:#8A5000; line-height:1.5; }
+  .banner-close{
+    background:none; border:none; color:#8A5000; cursor:pointer;
+    font-size:18px; line-height:1; opacity:0.6; padding:2px;
+  }
+  .notif-btn{
+    margin-top:8px; background:#7A3E00; color:#fff; border:none;
+    font-size:12px; font-weight:600; padding:7px 12px; border-radius:8px; cursor:pointer;
+  }
 
-    /* ── CAMERA LAYOUT ────────────────────────── */
-    .camera-section { margin-bottom: 32px; }
-    .camera-layout {
-      display: grid;
-      grid-template-columns: 420px 1fr;
-      gap: 16px;
-      align-items: start;
-    }
-    @media(max-width:860px) { .camera-layout { grid-template-columns: 1fr; } }
+  /* ---------- Filter chips (scrollable) ---------- */
+  .filters{
+    padding:16px 16px 4px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .chip-scroll{
+    display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; padding-bottom:2px;
+  }
+  .chip-scroll::-webkit-scrollbar{ display:none; }
+  .chip{
+    flex:0 0 auto; border:none; background:var(--surface); border:1px solid var(--border);
+    padding:8px 14px; font-size:13.5px; font-weight:600; color:var(--text-secondary);
+    border-radius:20px; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:5px;
+  }
+  .chip.active{ background:var(--text-primary); color:#fff; border-color:var(--text-primary); }
+  .chip .count-pill{ font-size:11px; background:rgba(0,0,0,0.08); border-radius:20px; padding:1px 6px; }
+  .chip.active .count-pill{ background:rgba(255,255,255,0.22); }
 
-    /* cam card */
-    .cam-card {
-      background: var(--white); border-radius: var(--r-xl);
-      box-shadow: var(--sh-md); overflow: hidden;
-      border: 1.5px solid var(--g200);
-    }
-    .cam-header {
-      display: flex; align-items: center; gap: 8px;
-      padding: 14px 18px; border-bottom: 1px solid var(--g200);
-    }
-    .cam-header span { font-size: 13px; font-weight: 600; color: var(--g600); }
-    .live-dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; animation: breathe 1.4s ease-in-out infinite; }
-    @keyframes breathe { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(.7);opacity:.5} }
-    .cam-body { padding: 14px; }
+  /* ---------- List / cards ---------- */
+  .content{ padding:8px 16px calc(100px + var(--safe-bottom)); }
+  .grid{ display:flex; flex-direction:column; gap:12px; margin-top:10px; }
 
-    .viewfinder {
-      position: relative; width: 100%; aspect-ratio: 4/3;
-      background: #0a0a0a; border-radius: var(--r-md); overflow: hidden;
-    }
-    #liveVideo { width: 100%; height: 100%; object-fit: cover; display: block; }
-    #snapCanvas { display: none; width: 100%; height: 100%; object-fit: cover; }
+  .card{
+    background:var(--surface); border-radius:var(--radius-lg);
+    padding:14px; box-shadow:var(--shadow);
+    border:1px solid rgba(0,0,0,0.03);
+    display:flex; flex-direction:column; gap:11px;
+  }
 
-    .scan-beam {
-      position: absolute; left: 0; width: 100%; height: 2px;
-      background: linear-gradient(90deg,transparent,#22c55e,transparent);
-      box-shadow: 0 0 10px rgba(34,197,94,.7);
-      top: 0; opacity: 0; transition: opacity .3s;
-      animation: scanMove 2.2s linear infinite;
-    }
-    .scan-beam.active { opacity: 1; }
-    @keyframes scanMove { 0%{top:0%} 100%{top:100%} }
+  .card-top{ display:flex; align-items:flex-start; gap:11px; }
+  .card-icon{
+    width:42px; height:42px; border-radius:12px; flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center;
+    font-size:21px; background:var(--surface-soft); border:1px solid var(--border);
+  }
+  .card-title{ min-width:0; flex:1; }
+  .card-name{ font-size:15.5px; font-weight:700; letter-spacing:-0.01em; line-height:1.3; }
+  .card-cat{ font-size:12px; color:var(--text-tertiary); margin-top:1px; }
+  .card-notes{
+    font-size:12.5px; color:var(--text-secondary); margin-top:5px; line-height:1.4;
+    background:var(--surface-soft); border-radius:8px; padding:6px 9px;
+    border-left:2px solid var(--border);
+  }
 
-    .vf-brackets { position: absolute; inset: 12px; pointer-events: none; }
-    .br { position: absolute; width: 20px; height: 20px; border-color: rgba(255,255,255,.55); border-style: solid; }
-    .br.tl  { top:0;left:0;  border-width:2px 0 0 2px; border-radius:3px 0 0 0; }
-    .br.tr  { top:0;right:0; border-width:2px 2px 0 0; border-radius:0 3px 0 0; }
-    .br.bl  { bottom:0;left:0;  border-width:0 0 2px 2px; border-radius:0 0 0 3px; }
-    .br.br2 { bottom:0;right:0; border-width:0 2px 2px 0; border-radius:0 0 3px 0; }
+  .badge{
+    font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px;
+    flex:0 0 auto; white-space:nowrap; margin-top:1px;
+  }
+  .badge.ok{ background:var(--green-bg); color:var(--green); }
+  .badge.low{ background:var(--orange-bg); color:var(--orange); }
+  .badge.out{ background:var(--red-bg); color:var(--red); }
 
-    .vf-status {
-      position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
-      background: rgba(0,0,0,.6); color: #fff; font-size: 12px; font-weight: 500;
-      padding: 5px 14px; border-radius: 999px; backdrop-filter: blur(6px); white-space: nowrap;
-    }
+  .qty-row{ display:flex; align-items:baseline; justify-content:space-between; }
+  .qty-value{ font-size:23px; font-weight:700; letter-spacing:-0.02em; }
+  .qty-unit{ font-size:13px; color:var(--text-secondary); font-weight:500; margin-left:3px; }
+  .qty-min{ font-size:11px; color:var(--text-tertiary); }
 
-    .no-cam-msg {
-      display: none; flex-direction: column; align-items: center; justify-content: center;
-      gap: 10px; height: 100%; min-height: 200px; text-align: center; padding: 24px;
-    }
-    .no-cam-msg .icon { font-size: 40px; }
-    .no-cam-msg p { font-size: 13px; color: var(--g400); line-height: 1.6; }
+  .gauge{ height:7px; border-radius:20px; background:#EEEEF0; overflow:hidden; }
+  .gauge-fill{ height:100%; border-radius:20px; transition:width .3s ease; }
+  .gauge-fill.ok{ background:var(--green); }
+  .gauge-fill.low{ background:var(--orange); }
+  .gauge-fill.out{ background:var(--red); }
 
-    .cam-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
-    .btn-capture {
-      background: var(--black); color: var(--white);
-      font-family: var(--font); font-size: 14px; font-weight: 600;
-      padding: 13px 18px; border-radius: 999px; border: none; cursor: pointer;
-      transition: all var(--ease); box-shadow: 0 4px 16px rgba(0,0,0,.18);
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .btn-capture:hover:not(:disabled) { background: var(--g800); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,.22); }
-    .btn-capture:active:not(:disabled) { transform: translateY(0); }
-    .btn-capture:disabled { background: var(--g300); color: var(--g400); cursor: not-allowed; box-shadow: none; }
-    .btn-retake {
-      background: transparent; color: var(--g500);
-      font-family: var(--font); font-size: 14px; font-weight: 500;
-      padding: 13px 18px; border-radius: 999px; border: 1.5px solid var(--g300); cursor: pointer;
-      transition: all var(--ease);
-    }
-    .btn-retake:hover { border-color: var(--g500); color: var(--g700); }
+  .card-actions{ display:flex; gap:8px; margin-top:2px; }
+  .card-actions button{
+    flex:1; font-size:13.5px; font-weight:600; padding:11px 8px;
+    border-radius:11px; border:1px solid var(--border); background:var(--surface-soft);
+    color:var(--text-primary); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:5px;
+    min-height:44px;
+  }
+  .card-actions button:active{ background:#EFEFF1; }
+  .card-actions button.buy{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .card-actions button.buy:active{ background:var(--accent-dark); }
+  .card-actions button svg{ width:14px; height:14px; }
+  .icon-btn{
+    width:44px; height:44px; flex:0 0 auto; border-radius:11px; border:1px solid var(--border);
+    background:var(--surface-soft); display:flex; align-items:center; justify-content:center;
+    cursor:pointer; color:var(--text-secondary);
+  }
+  .icon-btn:active{ background:#EFEFF1; }
+  .icon-btn svg{ width:15px; height:15px; }
 
-    /* ── REFERENCE PANEL ──────────────────────── */
-    .ref-card {
-      background: var(--white); border-radius: var(--r-xl);
-      box-shadow: var(--sh-md); border: 1.5px solid var(--g200); overflow: hidden;
-    }
-    .ref-header { padding: 14px 18px; border-bottom: 1px solid var(--g200); }
-    .ref-header-title { font-size: 13px; font-weight: 600; color: var(--g600); }
-    .ref-header-sub   { font-size: 11px; color: var(--g400); margin-top: 2px; }
+  /* ---------- FAB ---------- */
+  .fab{
+    position:fixed; right:20px; bottom:calc(24px + var(--safe-bottom));
+    width:58px; height:58px; border-radius:50%; z-index:50;
+    background:var(--accent); color:#fff; border:none;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 6px 20px rgba(0,113,227,0.4);
+    cursor:pointer;
+  }
+  .fab:active{ background:var(--accent-dark); transform:scale(0.95); }
+  .fab svg{ width:26px; height:26px; }
 
-    /* BIG reference grid */
-    .ref-grid {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 8px;
-      padding: 14px;
-      max-height: 480px;
-      overflow-y: auto;
-    }
-    @media(max-width:1060px) { .ref-grid { grid-template-columns: repeat(5,1fr); } }
-    @media(max-width:860px)  { .ref-grid { grid-template-columns: repeat(6,1fr); max-height:260px; } }
-    @media(max-width:540px)  { .ref-grid { grid-template-columns: repeat(4,1fr); } }
+  /* ---------- Empty state ---------- */
+  .empty{ text-align:center; padding:60px 20px; color:var(--text-tertiary); }
+  .empty-emoji{ font-size:42px; margin-bottom:12px; }
+  .empty-title{ font-size:16.5px; font-weight:700; color:var(--text-primary); margin-bottom:6px; }
+  .empty-sub{ font-size:13.5px; max-width:300px; margin:0 auto; line-height:1.5; }
 
-    .ref-grid::-webkit-scrollbar { width: 4px; }
-    .ref-grid::-webkit-scrollbar-track { background: transparent; }
-    .ref-grid::-webkit-scrollbar-thumb { background: var(--g300); border-radius: 999px; }
+  /* ---------- Bottom sheet (modal) ---------- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.4);
+    display:none; align-items:flex-end; justify-content:center;
+    z-index:100; animation:fadeIn .2s ease;
+  }
+  .overlay.show{ display:flex; }
+  @keyframes fadeIn{ from{opacity:0;} to{opacity:1;} }
 
-    .ref-item {
-      border-radius: var(--r-sm); overflow: hidden; cursor: default;
-      border: 2px solid transparent; transition: all var(--ease);
-      background: var(--g100); position: relative;
-    }
-    .ref-item.match {
-      border-color: var(--black);
-      box-shadow: 0 0 0 2px var(--black), 0 4px 12px rgba(0,0,0,.2);
-      transform: scale(1.06);
-    }
-    .ref-item img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
-    .ref-item .ref-name {
-      font-size: 8.5px; font-weight: 600; color: var(--g600);
-      text-align: center; padding: 3px 2px; line-height: 1.3; background: var(--white);
-    }
-    .ref-item .match-badge {
-      position: absolute; top: 3px; right: 3px;
-      background: var(--black); color: #fff;
-      font-size: 9px; font-weight: 700; padding: 2px 5px;
-      border-radius: 999px; opacity: 0; transition: opacity .2s;
-    }
-    .ref-item.match .match-badge { opacity: 1; }
+  .sheet{
+    background:var(--surface); border-radius:24px 24px 0 0; width:100%; max-width:480px;
+    max-height:90vh; overflow-y:auto; box-shadow:0 -10px 40px rgba(0,0,0,0.25);
+    animation:slideUp .28s cubic-bezier(.2,.9,.3,1.1);
+    padding-bottom:calc(16px + var(--safe-bottom));
+  }
+  @keyframes slideUp{ from{ transform:translateY(100%);} to{ transform:translateY(0);} }
+  .sheet-handle{ width:36px; height:5px; border-radius:3px; background:var(--border); margin:10px auto 2px; }
 
-    /* ── RESULT ───────────────────────────────── */
-    .result-section {
-      background: var(--white); border-radius: var(--r-xl);
-      box-shadow: var(--sh-xl); overflow: hidden; margin-bottom: 40px;
-      opacity: 0; transform: translateY(24px);
-      transition: all .5s cubic-bezier(.4,0,.2,1); pointer-events: none;
-    }
-    .result-section.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .sheet-header{ padding:12px 20px 4px; display:flex; align-items:center; justify-content:space-between; }
+  .sheet-title{ font-size:18px; font-weight:800; letter-spacing:-0.01em; }
+  .sheet-close{
+    width:30px; height:30px; border-radius:50%; border:none; background:#F0F0F2;
+    color:var(--text-secondary); font-size:17px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
 
-    .result-top { display: grid; grid-template-columns: 1fr 1fr; min-height: 280px; }
-    @media(max-width:640px) { .result-top { grid-template-columns: 1fr; } }
+  .sheet-body{ padding:14px 20px 6px; display:flex; flex-direction:column; gap:14px; }
+  .field label{ display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:6px; }
+  .field input, .field select, .field textarea{
+    width:100%; padding:12px 13px; border-radius:12px; border:1px solid var(--border);
+    background:var(--surface-soft); font-size:16px; color:var(--text-primary);
+    outline:none; -webkit-appearance:none; appearance:none;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    border-color:var(--accent); box-shadow:0 0 0 4px rgba(0,113,227,0.12);
+  }
+  .field-row{ display:flex; gap:10px; }
+  .field-row .field{ flex:1; }
+  .emoji-picker{ display:flex; flex-wrap:wrap; gap:7px; }
+  .emoji-opt{
+    width:42px; height:42px; border-radius:11px; border:1px solid var(--border);
+    background:var(--surface-soft); font-size:19px; cursor:pointer; display:flex;
+    align-items:center; justify-content:center;
+  }
+  .emoji-opt.selected{ border-color:var(--accent); background:rgba(0,113,227,0.1); }
 
-    .res-img-side { position: relative; overflow: hidden; background: var(--g100); }
-    .res-img-side img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .res-img-label {
-      position: absolute; bottom: 12px; left: 12px;
-      background: rgba(0,0,0,.55); color: #fff; font-size: 11px; font-weight: 500;
-      padding: 4px 10px; border-radius: 999px; backdrop-filter: blur(6px);
-    }
-    .res-info { padding: 32px 28px; display: flex; flex-direction: column; justify-content: center; }
-    .res-tag {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em;
-      padding: 5px 12px; border-radius: 999px; margin-bottom: 14px; width: fit-content;
-    }
-    .res-product { font-size: 1.65rem; font-weight: 800; letter-spacing: -.03em; color: var(--black); line-height: 1.1; margin-bottom: 6px; }
-    .res-label   { font-size: 13px; color: var(--g400); font-weight: 500; margin-bottom: 4px; }
-    .res-caneca  { font-size: 1.05rem; font-weight: 700; margin-bottom: 14px; }
-    .res-instr   { font-size: 13.5px; color: var(--g500); line-height: 1.65; border-left: 3px solid var(--g200); padding-left: 12px; }
+  .sheet-footer{ display:flex; gap:10px; padding:8px 20px 6px; }
+  .btn-secondary, .btn-primary, .btn-danger{
+    flex:1; padding:14px; border-radius:13px; font-size:15px; font-weight:700;
+    border:none; cursor:pointer; min-height:48px;
+  }
+  .btn-secondary{ background:#F0F0F2; color:var(--text-primary); }
+  .btn-primary{ background:var(--accent); color:#fff; }
+  .btn-danger{ background:var(--red-bg); color:var(--red); flex:0 0 auto; padding:14px 18px; }
 
-    /* ── BINS ─────────────────────────────────── */
-    .bins-section { margin-bottom: 40px; }
-    .bins-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
-    @media(max-width:640px) { .bins-grid { grid-template-columns: repeat(2,1fr); } }
-    @media(max-width:380px) { .bins-grid { grid-template-columns: 1fr; } }
+  /* ---------- Settings sheet extras ---------- */
+  .settings-block{ background:var(--surface-soft); border:1px solid var(--border); border-radius:14px; padding:14px; }
+  .settings-block + .settings-block{ margin-top:12px; }
+  .settings-label{ font-size:12.5px; font-weight:700; color:var(--text-secondary); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.02em; }
+  .settings-help{ font-size:12.5px; color:var(--text-tertiary); line-height:1.5; margin-top:6px; }
+  .link-row{ display:flex; gap:8px; }
+  .link-row input{ flex:1; font-size:13px; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:#fff; color:var(--text-secondary); }
+  .link-row button{
+    flex:0 0 auto; background:var(--accent); color:#fff; border:none; border-radius:10px;
+    padding:0 14px; font-size:13px; font-weight:700; cursor:pointer;
+  }
+  .status-line{ display:flex; align-items:center; gap:7px; font-size:13px; color:var(--text-secondary); }
+  .row-2{ display:flex; gap:8px; }
+  .row-2 button{ flex:1; }
 
-    .bin-card {
-      background: var(--white); border-radius: var(--r-lg); padding: 20px 16px;
-      border: 2px solid var(--g200); box-shadow: var(--sh-sm); transition: all var(--ease);
-    }
-    .bin-card.active { transform: translateY(-4px); box-shadow: var(--sh-lg); }
-    .bin-card.active.vc { border-color: var(--verde); }
-    .bin-card.active.ac { border-color: var(--azul); }
-    .bin-card.active.gc { border-color: var(--gris); }
-    .bin-card.active.rc { border-color: var(--rojo); }
-    .bin-card.active.nc { border-color: var(--naranja); }
-    .bin-card.active.ec { border-color: var(--elec); }
+  .toast{
+    position:fixed; bottom:calc(24px + var(--safe-bottom)); left:50%; transform:translateX(-50%) translateY(20px);
+    background:#1D1D1F; color:#fff; padding:12px 18px; border-radius:12px;
+    font-size:13.5px; font-weight:600; opacity:0; pointer-events:none;
+    transition:all .25s ease; z-index:200; box-shadow:0 10px 30px rgba(0,0,0,0.25);
+    max-width:86vw; text-align:center;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
-    .bin-circle { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 10px; }
-    .bin-name { font-size: 14px; font-weight: 700; color: var(--black); margin-bottom: 3px; letter-spacing: -.01em; }
-    .bin-sub  { font-size: 11px; font-weight: 600; margin-bottom: 7px; }
-    .bin-mat  { font-size: 11px; color: var(--g400); line-height: 1.5; }
+  footer{ text-align:center; padding:8px 18px calc(90px + var(--safe-bottom)); font-size:11px; color:var(--text-tertiary); }
 
-    /* ── ANIMATIONS ───────────────────────────── */
-    @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-    .camera-section { animation: fadeUp .5s ease both; }
-    .bins-section   { animation: fadeUp .5s .1s ease both; }
-    #step2wrap { opacity: 0; transition: opacity .4s ease; }
-    #step2wrap.show { opacity: 1; }
-  </style>
+  /* ---------- Wider screens (tablet / desktop) ---------- */
+  @media (min-width:680px){
+    .topbar-row1{ padding:16px 28px 8px; }
+    .topbar-row2{ padding:0 28px 14px; max-width:420px; }
+    .filters{ padding:18px 28px 4px; }
+    .content{ padding:8px 28px 90px; max-width:1100px; margin:0 auto; }
+    .banner-wrap{ padding:0 28px; max-width:1100px; margin:0 auto; }
+    .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); }
+    .overlay{ align-items:center; padding:20px; }
+    .sheet{ border-radius:22px; animation:popIn .22s cubic-bezier(.2,.9,.3,1.2); max-height:88vh; }
+    .sheet-handle{ display:none; }
+    @keyframes popIn{ from{opacity:0; transform:scale(0.95) translateY(10px);} to{opacity:1; transform:scale(1) translateY(0);} }
+    .fab{ right:36px; bottom:36px; }
+  }
+</style>
 </head>
 <body>
 
-<!-- HERO -->
-<header class="hero">
-  <h1>Identificador de residuos</h1>
-</header>
-
-<main class="main">
-
-  <!-- STEP 1 -->
-  <section class="camera-section">
-    <div class="step-label">
-      <div class="step-num">1</div>
-      <div class="step-title">Apunta la cámara al residuo y captura</div>
+<div class="topbar">
+  <div class="topbar-row1">
+    <div class="brand">
+      <input class="brand-name" id="brandName" value="Mi Cocina" spellcheck="false">
+      <div class="brand-sub"><span class="sync-dot off" id="syncDot"></span><span id="syncLabel">Solo en este teléfono</span></div>
     </div>
-
-    <div class="camera-layout">
-
-      <!-- Viewfinder -->
-      <div class="cam-card">
-        <div class="cam-header">
-          <div class="live-dot"></div>
-          <span>Cámara en vivo</span>
-        </div>
-        <div class="cam-body">
-          <div class="viewfinder" id="viewfinder">
-            <video id="liveVideo" autoplay playsinline muted></video>
-            <canvas id="snapCanvas"></canvas>
-            <div class="scan-beam" id="scanBeam"></div>
-            <div class="vf-brackets">
-              <div class="br tl"></div><div class="br tr"></div>
-              <div class="br bl"></div><div class="br br2"></div>
-            </div>
-            <div class="vf-status" id="vfStatus">Iniciando cámara…</div>
-            <div class="no-cam-msg" id="noCamMsg">
-              <div class="icon">📵</div>
-              <p>No se pudo acceder a la cámara.<br/>Abre el archivo en Chrome o Safari y permite los permisos.</p>
-            </div>
-          </div>
-          <div class="cam-actions">
-            <button class="btn-capture" id="btnCapture" disabled onclick="capturar()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M20 7h-3l-2-3H9L7 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
-              Capturar foto
-            </button>
-            <button class="btn-retake" id="btnRetake" onclick="reiniciar()" style="display:none">
-              Volver a intentar
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Referencias -->
-      <div class="ref-card">
-        <div class="ref-header">
-          <div class="ref-header-title">Residuos de referencia</div>
-          <div class="ref-header-sub">La app compara tu foto con estas imágenes</div>
-        </div>
-        <div class="ref-grid" id="refGrid"></div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- STEP 2: RESULTADO -->
-  <div id="step2wrap">
-    <div class="step-label" style="margin-bottom:18px">
-      <div class="step-num">2</div>
-      <div class="step-title">Resultado de la detección</div>
+    <button class="icon-round" id="settingsBtn" title="Ajustes y sincronización">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+  <div class="topbar-row2">
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="searchInput" type="text" placeholder="Buscar ingrediente...">
     </div>
   </div>
-  <section class="result-section" id="resultSection">
-    <div class="result-top">
-      <div class="res-img-side">
-        <img id="resImg" src="" alt=""/>
-        <div class="res-img-label" id="resImgLabel"></div>
+</div>
+
+<div class="banner-wrap">
+  <div class="banner" id="reminderBanner" style="display:none;">
+    <div class="banner-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </div>
+    <div class="banner-text">
+      <div class="banner-title" id="bannerTitle">Tienes ingredientes por comprar</div>
+      <div class="banner-list" id="bannerList"></div>
+      <button class="notif-btn" id="enableNotifBtn">Activar recordatorios</button>
+    </div>
+    <button class="banner-close" id="bannerCloseBtn">&times;</button>
+  </div>
+</div>
+
+<div class="filters">
+  <div class="chip-scroll" id="filterSeg">
+    <button class="chip active" data-filter="todos">Todos <span class="count-pill" id="cnt-todos">0</span></button>
+    <button class="chip" data-filter="comprar">Por comprar <span class="count-pill" id="cnt-comprar">0</span></button>
+    <button class="chip" data-filter="bajo">Bajos <span class="count-pill" id="cnt-bajo">0</span></button>
+    <button class="chip" data-filter="agotado">Agotados <span class="count-pill" id="cnt-agotado">0</span></button>
+  </div>
+</div>
+
+<div class="content">
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="emptyState" style="display:none;">
+    <div class="empty-emoji">🧺</div>
+    <div class="empty-title">Aún no hay ingredientes</div>
+    <div class="empty-sub">Toca el botón "+" para añadir tu primer ingrediente.</div>
+  </div>
+</div>
+
+<footer id="footerNote">Los datos se guardan en este dispositivo.</footer>
+
+<button class="fab" id="openAddBtn" title="Añadir ingrediente">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
+
+<!-- Modal: añadir/editar ingrediente -->
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title" id="modalTitle">Nuevo ingrediente</div>
+      <button class="sheet-close" id="modalCloseBtn">&times;</button>
+    </div>
+    <div class="sheet-body">
+      <div class="field">
+        <label>Ícono</label>
+        <div class="emoji-picker" id="emojiPicker"></div>
       </div>
-      <div class="res-info">
-        <div class="res-tag"     id="resTag"></div>
-        <div class="res-product" id="resProd"></div>
-        <div class="res-label">Va en la caneca →</div>
-        <div class="res-caneca"  id="resCaneca"></div>
-        <div class="res-instr"   id="resInstr"></div>
+      <div class="field">
+        <label>Nombre del ingrediente</label>
+        <input type="text" id="fName" placeholder="Ej: Tomate chonto">
+      </div>
+      <div class="field">
+        <label>Categoría</label>
+        <select id="fCat">
+          <option>Verduras y frutas</option>
+          <option>Carnes y embutidos</option>
+          <option>Lácteos</option>
+          <option>Granos y abarrotes</option>
+          <option>Condimentos y salsas</option>
+          <option>Panadería</option>
+          <option>Bebidas</option>
+          <option>Empaques y desechables</option>
+          <option>Otro</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Cantidad actual</label>
+          <input type="number" inputmode="decimal" id="fQty" min="0" step="0.1" placeholder="0">
+        </div>
+        <div class="field">
+          <label>Unidad</label>
+          <select id="fUnit">
+            <option>kg</option>
+            <option>g</option>
+            <option>L</option>
+            <option>ml</option>
+            <option>unidades</option>
+            <option>libras</option>
+            <option>paquetes</option>
+            <option>cajas</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Avisar "se va a acabar pronto" cuando baje de</label>
+        <input type="number" inputmode="decimal" id="fMin" min="0" step="0.1" placeholder="Ej: 2">
+      </div>
+      <div class="field">
+        <label>Notas (proveedor, precio, preparación, etc.)</label>
+        <textarea id="fNotes" rows="2" placeholder="Ej: comprar en Corabastos, marca X"></textarea>
       </div>
     </div>
-  </section>
-
-  <!-- STEP 3: CANECAS -->
-  <section class="bins-section">
-    <div class="step-label">
-      <div class="step-num">3</div>
-      <div class="step-title">¿En qué caneca se tira?</div>
+    <div class="sheet-footer">
+      <button class="btn-danger" id="deleteBtn" style="display:none;">Eliminar</button>
+      <button class="btn-secondary" id="cancelBtn">Cancelar</button>
+      <button class="btn-primary" id="saveBtn">Guardar</button>
     </div>
-    <div class="bins-grid" id="binsGrid"></div>
-  </section>
+  </div>
+</div>
 
-</main>
+<!-- Modal: ajustes / sincronización -->
+<div class="overlay" id="settingsOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title">Ajustes</div>
+      <button class="sheet-close" id="settingsCloseBtn">&times;</button>
+    </div>
+    <div class="sheet-body">
+      <div class="settings-block">
+        <div class="settings-label">Sincronizar con tu papá / hija</div>
+        <div class="status-line" style="margin-bottom:10px;">
+          <span class="sync-dot off" id="syncDot2"></span>
+          <span id="syncLabel2">Solo en este teléfono</span>
+        </div>
+        <div id="syncActive" style="display:none;">
+          <div style="font-size:13px; color:var(--text-secondary); margin-bottom:8px;">Comparte este enlace: quien lo abra verá y editará el mismo inventario en tiempo real.</div>
+          <div class="link-row">
+            <input type="text" id="syncLinkInput" readonly>
+            <button id="copyLinkBtn">Copiar</button>
+          </div>
+          <div class="row-2" style="margin-top:10px;">
+            <button class="btn-secondary" id="pullNowBtn" style="padding:10px; font-size:13px;">Actualizar ahora</button>
+            <button class="btn-danger" id="unlinkBtn" style="padding:10px; font-size:13px; flex:1;">Dejar de sincronizar</button>
+          </div>
+        </div>
+        <div id="syncInactive">
+          <button class="btn-primary" id="createSyncBtn" style="width:100%; margin-bottom:10px;">Crear enlace de sincronización</button>
+          <div style="font-size:12.5px; color:var(--text-tertiary); text-align:center; margin:6px 0;">— o si tu papá ya creó uno —</div>
+          <div class="link-row">
+            <input type="text" id="joinCodeInput" placeholder="Pega aquí el enlace o código">
+            <button id="joinSyncBtn">Unir</button>
+          </div>
+        </div>
+        <div class="settings-help">La sincronización usa un servicio gratuito externo (jsonblob.com) solo para guardar la lista de ingredientes. No es privado ni tiene contraseña: cualquiera con el enlace puede ver y editar el inventario, así que compártelo solo con tu familia.</div>
+      </div>
+
+      <div class="settings-block">
+        <div class="settings-label">Respaldo</div>
+        <div class="row-2">
+          <button class="btn-secondary" id="exportBtn" style="padding:11px; font-size:13px;">Exportar copia (.json)</button>
+          <button class="btn-secondary" id="importBtn" style="padding:11px; font-size:13px;">Importar copia</button>
+        </div>
+        <input type="file" id="importFile" accept="application/json" style="display:none;">
+      </div>
+
+      <div class="settings-block" id="installBlock">
+        <div class="settings-label">Usarla como app</div>
+        <div class="settings-help" style="margin-top:0;">En iPhone: toca el botón compartir de Safari (el cuadrado con la flecha hacia arriba) y elige "Añadir a pantalla de inicio". Así te queda como un ícono de app normal, sin barra de navegador.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script>
-/* =====================================================
-   CANECAS GTC 24
-===================================================== */
-const CANECAS = {
-  verde:   { nombre:"Caneca Verde",   sub:"Orgánicos",        color:"#2d6a2d", light:"#e8f5e9", emoji:"🟢", cls:"vc", mat:"Restos de comida, cáscaras, jardín, biodegradables" },
-  azul:    { nombre:"Caneca Azul",    sub:"Reciclables",      color:"#1a56a0", light:"#e3efff", emoji:"🔵", cls:"ac", mat:"Papel, cartón, plástico, vidrio, metal (limpios)" },
-  gris:    { nombre:"Caneca Gris",    sub:"No aprovechables", color:"#5c5c5c", light:"#f0f0f0", emoji:"⚫", cls:"gc", mat:"Papel sucio, icopor, empaques mixtos, colillas" },
-  rojo:    { nombre:"Caneca Roja",    sub:"Peligrosos",       color:"#c0392b", light:"#fdecea", emoji:"🔴", cls:"rc", mat:"Medicamentos, pilas, químicos, aerosoles" },
-  naranja: { nombre:"Caneca Naranja", sub:"Biosanitarios",    color:"#c05c00", light:"#fff3e0", emoji:"🟠", cls:"nc", mat:"Jeringas, vendas con sangre, material médico" },
-  elec:    { nombre:"Punto RAEE",     sub:"Electrónicos",     color:"#2c3e70", light:"#e8ebf7", emoji:"🔌", cls:"ec", mat:"Cables, celulares, computadores, pilas recargables" },
-};
+(function(){
+  "use strict";
 
-/* =====================================================
-   PRODUCTOS (residuos colombianos comunes)
-   colorProfile = color dominante REAL del objeto
-   R, G, B  0-255
-===================================================== */
-const PRODUCTOS = [
-  /* ── ORGÁNICOS ────────────────────────── */
-  {
-    id:"cascara_platano", nombre:"Cáscara de plátano", hint:"Orgánico",
-    img:"https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400&q=80",
-    cp:{r:215,g:188,b:38}, caneca:"verde",
-    instr:"Deposítala en la caneca verde. Puedes también usarla para compostaje casero."
-  },
-  {
-    id:"cascara_naranja", nombre:"Cáscara de naranja/mandarina", hint:"Orgánico",
-    img:"https://images.unsplash.com/photo-1547514701-42782101795e?w=400&q=80",
-    cp:{r:230,g:120,b:30}, caneca:"verde",
-    instr:"Va en la caneca verde. Las cáscaras cítricas son biodegradables."
-  },
-  {
-    id:"cascara_aguacate", nombre:"Semilla de aguacate", hint:"Orgánico",
-    img:"https://images.unsplash.com/photo-1601039641847-7857b994d704?w=400&q=80",
-    cp:{r:90,g:55,b:30}, caneca:"verde",
-    instr:"Deposítala en la caneca verde. Es materia orgánica biodegradable."
-  },
-  {
-    id:"restos_comida", nombre:"Restos de comida", hint:"Orgánico",
-    img:"https://images.unsplash.com/photo-1606859222032-c8e5a793a0d8?w=400&q=80",
-    cp:{r:170,g:110,b:65}, caneca:"verde",
-    instr:"Deposítalos en la caneca verde. Escúrrelos un poco antes para reducir humedad."
-  },
-  {
-    id:"panela", nombre:"Residuos de panela/caña", hint:"Orgánico",
-    img:"https://images.unsplash.com/photo-1594498653385-d5172c532c00?w=400&q=80",
-    cp:{r:160,g:105,b:45}, caneca:"verde",
-    instr:"Va en la caneca verde. Es residuo orgánico de origen vegetal."
-  },
-  {
-    id:"hojas_cafe", nombre:"Residuos de café/filtros", hint:"Orgánico",
-    img:"https://images.unsplash.com/photo-1559496417-e7f25cb247f3?w=400&q=80",
-    cp:{r:95,g:60,b:35}, caneca:"verde",
-    instr:"El café molido y los filtros de papel van en la caneca verde. Son compostables."
-  },
-  {
-    id:"yuca_papa", nombre:"Cáscara de papa/yuca", hint:"Orgánico",
-    img:"https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400&q=80",
-    cp:{r:200,g:170,b:110}, caneca:"verde",
-    instr:"Van en la caneca verde. Son residuos biodegradables de tubérculos."
-  },
-  {
-    id:"hierbas", nombre:"Hierbas y plantas", hint:"Orgánico",
-    img:"https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&q=80",
-    cp:{r:70,g:130,b:60}, caneca:"verde",
-    instr:"Deposítalas en la caneca verde. Flores, hojas y ramas pequeñas son orgánicas."
-  },
+  var STORAGE_KEY = "inventario_ingredientes_v1";
+  var UPDATED_KEY = "inventario_updatedAt_v1";
+  var BRAND_KEY = "inventario_brand_v1";
+  var SYNC_KEY = "inventario_sync_v1";
+  var API_BASE = "https://jsonblob.com/api/jsonBlob";
+  var EMOJIS = ["🥬","🍅","🥩","🍗","🧀","🥛","🍞","🧂","🌾","🫒","🥚","🍚","🌶️","🧄","🧅","🥔","🍋","🧈","🥫","📦"];
 
-  /* ── RECICLABLES (AZUL) ───────────────── */
-  {
-    id:"botella_pet", nombre:"Botella de plástico PET", hint:"Reciclable",
-    img:"https://images.unsplash.com/photo-1605600659873-d808a13e4d9a?w=400&q=80",
-    cp:{r:200,g:228,b:242}, caneca:"azul",
-    instr:"Enjuágala y deposítala en la caneca azul. Retira la tapa si es posible."
-  },
-  {
-    id:"bolsa_plastico", nombre:"Bolsa de plástico limpia", hint:"Reciclable",
-    img:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80",
-    cp:{r:225,g:235,b:240}, caneca:"azul",
-    instr:"Solo si está limpia y seca, va en la caneca azul. Si está sucia, va en la gris."
-  },
-  {
-    id:"carton", nombre:"Caja de cartón", hint:"Reciclable",
-    img:"https://images.unsplash.com/photo-1553413077-190dd305871c?w=400&q=80",
-    cp:{r:188,g:148,b:92}, caneca:"azul",
-    instr:"Aplánala y deposítala en la caneca azul. Debe estar seca y limpia."
-  },
-  {
-    id:"vidrio", nombre:"Botella de vidrio", hint:"Reciclable",
-    img:"https://images.unsplash.com/photo-1581375321224-79da6fd32f6e?w=400&q=80",
-    cp:{r:138,g:175,b:128}, caneca:"azul",
-    instr:"Enjuágala y deposítala en la caneca azul. El vidrio es 100% reciclable."
-  },
-  {
-    id:"lata_aluminio", nombre:"Lata de aluminio", hint:"Reciclable",
-    img:"https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=400&q=80",
-    cp:{r:192,g:196,b:202}, caneca:"azul",
-    instr:"Enjuágala, aplástala y deposítala en la caneca azul."
-  },
-  {
-    id:"papel_limpio", nombre:"Papel limpio / cuaderno", hint:"Reciclable",
-    img:"https://images.unsplash.com/photo-1568667256549-094345857637?w=400&q=80",
-    cp:{r:246,g:242,b:232}, caneca:"azul",
-    instr:"Va en la caneca azul si está limpio y seco. Papel con grasa o mojado va en la gris."
-  },
-  {
-    id:"periodico", nombre:"Periódico / revista", hint:"Reciclable",
-    img:"https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=80",
-    cp:{r:200,g:192,b:175}, caneca:"azul",
-    instr:"Van en la caneca azul. Si están mojados o muy sucios, van en la gris."
-  },
-  {
-    id:"lata_atun", nombre:"Lata de atún / conserva", hint:"Reciclable",
-    img:"https://images.unsplash.com/photo-1535016120720-40c646be5580?w=400&q=80",
-    cp:{r:170,g:175,b:180}, caneca:"azul",
-    instr:"Enjuágala bien y llévala a la caneca azul. El metal es altamente reciclable."
-  },
-  {
-    id:"tetrapack", nombre:"Tetrapack (jugos/leche)", hint:"Reciclable",
-    img:"https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&q=80",
-    cp:{r:240,g:220,b:80}, caneca:"azul",
-    instr:"Enjuágalo, aplástalo y deposítalo en la caneca azul. Retira el pitillo."
-  },
-  {
-    id:"envase_plastico", nombre:"Envase/tarro plástico limpio", hint:"Reciclable",
-    img:"https://images.unsplash.com/photo-1585421514738-01798e348b17?w=400&q=80",
-    cp:{r:78,g:122,b:165}, caneca:"azul",
-    instr:"Enjuágalo bien y llévalo a la caneca azul. Solo si está limpio."
-  },
+  var state = {
+    items: [],
+    filter: "todos",
+    search: "",
+    editingId: null,
+    selectedEmoji: EMOJIS[0],
+    updatedAt: 0
+  };
 
-  /* ── NO APROVECHABLES (GRIS) ──────────── */
-  {
-    id:"servilleta", nombre:"Servilleta / papel de cocina usados", hint:"No reciclable",
-    img:"https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&q=80",
-    cp:{r:232,g:222,b:205}, caneca:"gris",
-    instr:"Va a la caneca gris. El papel con grasa o húmedo no se puede reciclar."
-  },
-  {
-    id:"icopor", nombre:"Icopor / espuma de poliestireno", hint:"No reciclable",
-    img:"https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400&q=80",
-    cp:{r:245,g:245,b:248}, caneca:"gris",
-    instr:"Va en la caneca gris. El icopor no es reciclable en Colombia actualmente."
-  },
-  {
-    id:"colilla", nombre:"Colilla de cigarrillo", hint:"No reciclable",
-    img:"https://images.unsplash.com/photo-1567336273898-ebbf9eb3c3bf?w=400&q=80",
-    cp:{r:165,g:130,b:100}, caneca:"gris",
-    instr:"Va en la caneca gris. Nunca al suelo ni al sanitario, contamina el agua."
-  },
-  {
-    id:"papel_sucio", nombre:"Papel sucio / empaque con residuo", hint:"No reciclable",
-    img:"https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=400&q=80",
-    cp:{r:200,g:185,b:155}, caneca:"gris",
-    instr:"Va en la caneca gris. El papel contaminado con grasa o comida no se recicla."
-  },
-  {
-    id:"pajilla", nombre:"Pitillo / pajilla plástica", hint:"No reciclable",
-    img:"https://images.unsplash.com/photo-1562887245-b8ef6f56c6ab?w=400&q=80",
-    cp:{r:220,g:80,b:80}, caneca:"gris",
-    instr:"Va en la caneca gris. Los pitillos son difíciles de reciclar y contaminan."
-  },
+  var sync = { blobId:null, connected:false, syncing:false, pollTimer:null, pushTimer:null };
 
-  /* ── PELIGROSOS (ROJO) ────────────────── */
-  {
-    id:"pila", nombre:"Pila / batería usada", hint:"Peligroso",
-    img:"https://images.unsplash.com/photo-1609275456521-b6cfb55c5d5b?w=400&q=80",
-    cp:{r:52,g:52,b:58}, caneca:"rojo",
-    instr:"Llévala al punto de recolección de pilas más cercano. Nunca a la basura común."
-  },
-  {
-    id:"medicamento", nombre:"Medicamento vencido", hint:"Peligroso",
-    img:"https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&q=80",
-    cp:{r:208,g:208,b:215}, caneca:"rojo",
-    instr:"Llévalo a la farmacia o punto RESPEL. Nunca lo deseches por el lavamanos."
-  },
-  {
-    id:"aerosol", nombre:"Aerosol / desodorante spray", hint:"Peligroso",
-    img:"https://images.unsplash.com/photo-1627384113972-f8c84a0b9ab6?w=400&q=80",
-    cp:{r:180,g:195,b:210}, caneca:"rojo",
-    instr:"Aunque esté vacío, deposítalo en la caneca roja o punto de recolección especial."
-  },
-  {
-    id:"aceite_cocina", nombre:"Aceite de cocina usado", hint:"Peligroso",
-    img:"https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400&q=80",
-    cp:{r:215,g:175,b:55}, caneca:"rojo",
-    instr:"Guárdalo en un recipiente tapado y llévalo a un punto de recolección de aceite."
-  },
-  {
-    id:"pinturas", nombre:"Pintura / barniz sobrante", hint:"Peligroso",
-    img:"https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=400&q=80",
-    cp:{r:60,g:100,b:180}, caneca:"rojo",
-    instr:"Es un residuo peligroso. Llévalo al punto RESPEL más cercano de tu ciudad."
-  },
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
-  /* ── ELECTRÓNICOS (RAEE) ──────────────── */
-  {
-    id:"celular", nombre:"Celular dañado", hint:"Electrónico",
-    img:"https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=400&q=80",
-    cp:{r:44,g:44,b:50}, caneca:"elec",
-    instr:"Llévalo al punto RAEE de Claro, Movistar o Tigo. Nunca a la basura común."
-  },
-  {
-    id:"cable", nombre:"Cable / cargador dañado", hint:"Electrónico",
-    img:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80",
-    cp:{r:35,g:35,b:38}, caneca:"elec",
-    instr:"Va al punto RAEE. Los cables contienen metales valiosos recuperables."
-  },
-  {
-    id:"computador", nombre:"Teclado / periférico dañado", hint:"Electrónico",
-    img:"https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=400&q=80",
-    cp:{r:68,g:68,b:75}, caneca:"elec",
-    instr:"Llévalo a un punto RAEE. Las alcaldías tienen jornadas de recolección periódicas."
-  },
-  {
-    id:"bombillo", nombre:"Bombillo / lámpara dañada", hint:"Electrónico",
-    img:"https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=400&q=80",
-    cp:{r:215,g:205,b:165}, caneca:"elec",
-    instr:"Los bombillos LED y fluorescentes van al punto RAEE, no a la basura común."
-  },
-];
+  /* ---------- Local storage ---------- */
+  function load(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      state.items = raw ? JSON.parse(raw) : sampleData();
+      if(!raw) persistLocal();
+    }catch(e){ state.items = sampleData(); }
+    state.updatedAt = Number(localStorage.getItem(UPDATED_KEY)||0);
 
-/* =====================================================
-   RENDER: REFERENCIAS
-===================================================== */
-const refGrid = document.getElementById("refGrid");
-PRODUCTOS.forEach(p => {
-  const d = document.createElement("div");
-  d.className = "ref-item";
-  d.id = "ref-" + p.id;
-  d.innerHTML = `
-    <div class="match-badge">✓</div>
-    <img src="${p.img}" alt="${p.nombre}" loading="lazy"/>
-    <div class="ref-name">${p.nombre}</div>
-  `;
-  refGrid.appendChild(d);
-});
+    try{
+      var brand = localStorage.getItem(BRAND_KEY);
+      if(brand) document.getElementById("brandName").value = brand;
+    }catch(e){}
 
-/* =====================================================
-   RENDER: CANECAS
-===================================================== */
-const binsGrid = document.getElementById("binsGrid");
-Object.entries(CANECAS).forEach(([k,c]) => {
-  const d = document.createElement("div");
-  d.className = `bin-card ${c.cls}`;
-  d.id = "bin-" + k;
-  d.innerHTML = `
-    <div class="bin-circle" style="background:${c.light};color:${c.color}">${c.emoji}</div>
-    <div class="bin-name">${c.nombre}</div>
-    <div class="bin-sub" style="color:${c.color}">${c.sub}</div>
-    <div class="bin-mat">${c.mat}</div>
-  `;
-  binsGrid.appendChild(d);
-});
+    try{
+      var s = localStorage.getItem(SYNC_KEY);
+      if(s) sync.blobId = JSON.parse(s).blobId;
+    }catch(e){}
 
-/* =====================================================
-   CÁMARA
-===================================================== */
-const video    = document.getElementById("liveVideo");
-const canvas   = document.getElementById("snapCanvas");
-const scanBeam = document.getElementById("scanBeam");
-const vfStatus = document.getElementById("vfStatus");
-const noCamMsg = document.getElementById("noCamMsg");
-const btnCap   = document.getElementById("btnCapture");
-const btnRet   = document.getElementById("btnRetake");
-let streamActive = false;
-
-async function startCamera() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode:"environment", width:{ideal:1280}, height:{ideal:960} },
-      audio: false
-    });
-    video.srcObject = stream;
-    video.style.display = "block";
-    noCamMsg.style.display = "none";
-    video.onloadedmetadata = () => {
-      vfStatus.textContent = "Cámara lista — apunta al residuo";
-      scanBeam.classList.add("active");
-      btnCap.disabled = false;
-      streamActive = true;
-    };
-  } catch(e) {
-    video.style.display = "none";
-    noCamMsg.style.display = "flex";
-    vfStatus.style.display = "none";
-    scanBeam.classList.remove("active");
+    // ?sync=ID en la URL une automáticamente
+    try{
+      var params = new URLSearchParams(location.search);
+      var urlSync = params.get("sync");
+      if(urlSync && urlSync !== sync.blobId){
+        sync.blobId = urlSync;
+        persistSyncConfig();
+      }
+    }catch(e){}
   }
-}
-startCamera();
 
-/* =====================================================
-   DETECCIÓN POR COLOR (múltiples zonas + ponderación)
-===================================================== */
-function sampleZone(data, imgW, x, y, w, h) {
-  let r=0, g=0, b=0, n=0;
-  for(let py=y; py<y+h; py++) {
-    for(let px=x; px<x+w; px++) {
-      const i=(py*imgW+px)*4;
-      r+=data[i]; g+=data[i+1]; b+=data[i+2]; n++;
+  function persistLocal(bumpTimestamp){
+    if(bumpTimestamp !== false){
+      state.updatedAt = Date.now();
+    }
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items));
+      localStorage.setItem(UPDATED_KEY, String(state.updatedAt));
+    }catch(e){}
+  }
+
+  function persistSyncConfig(){
+    try{ localStorage.setItem(SYNC_KEY, JSON.stringify({ blobId: sync.blobId })); }catch(e){}
+  }
+
+  function sampleData(){
+    return [
+      { id: uid(), name:"Tomate chonto", cat:"Verduras y frutas", emoji:"🍅", qty:1.5, unit:"kg", min:2, notes:"" },
+      { id: uid(), name:"Pechuga de pollo", cat:"Carnes y embutidos", emoji:"🍗", qty:0, unit:"kg", min:3, notes:"Comprar en la carnicería de siempre, pedir sin piel" },
+      { id: uid(), name:"Arroz", cat:"Granos y abarrotes", emoji:"🌾", qty:12, unit:"kg", min:4, notes:"" },
+      { id: uid(), name:"Queso campesino", cat:"Lácteos", emoji:"🧀", qty:2.2, unit:"kg", min:1, notes:"" }
+    ];
+  }
+
+  /* ---------- Estado del ingrediente ---------- */
+  function status(item){
+    var qty = Number(item.qty)||0, min = Number(item.min)||0;
+    if(qty <= 0) return "agotado";
+    if(qty <= min) return "bajo";
+    return "ok";
+  }
+  function statusLabel(s){
+    return s === "agotado" ? "Agotado" : s === "bajo" ? "Se acaba pronto" : "Disponible";
+  }
+  function gaugePct(item){
+    var qty = Number(item.qty)||0, min = Number(item.min)||0;
+    var target = Math.max(min*2.2, min+1, qty, 1);
+    return Math.max(0, Math.min(100, (qty/target)*100));
+  }
+
+  /* ---------- Render ---------- */
+  function render(){
+    var items = state.items.slice();
+
+    if(state.search.trim()){
+      var q = state.search.trim().toLowerCase();
+      items = items.filter(function(i){
+        return i.name.toLowerCase().indexOf(q) !== -1 || i.cat.toLowerCase().indexOf(q) !== -1;
+      });
+    }
+
+    var all = state.items;
+    var cComprar = all.filter(function(i){ var s=status(i); return s==="bajo"||s==="agotado"; }).length;
+    var cBajo = all.filter(function(i){ return status(i)==="bajo"; }).length;
+    var cAgotado = all.filter(function(i){ return status(i)==="agotado"; }).length;
+    document.getElementById("cnt-todos").textContent = all.length;
+    document.getElementById("cnt-comprar").textContent = cComprar;
+    document.getElementById("cnt-bajo").textContent = cBajo;
+    document.getElementById("cnt-agotado").textContent = cAgotado;
+
+    if(state.filter === "comprar") items = items.filter(function(i){ var s=status(i); return s==="bajo"||s==="agotado"; });
+    else if(state.filter === "bajo") items = items.filter(function(i){ return status(i)==="bajo"; });
+    else if(state.filter === "agotado") items = items.filter(function(i){ return status(i)==="agotado"; });
+
+    var order = { agotado:0, bajo:1, ok:2 };
+    items.sort(function(a,b){
+      var sa = status(a), sb = status(b);
+      if(order[sa] !== order[sb]) return order[sa]-order[sb];
+      return a.name.localeCompare(b.name);
+    });
+
+    var grid = document.getElementById("grid");
+    grid.innerHTML = "";
+    document.getElementById("emptyState").style.display = (all.length===0) ? "block" : "none";
+
+    items.forEach(function(item){ grid.appendChild(renderCard(item)); });
+
+    renderBanner();
+  }
+
+  function renderCard(item){
+    var s = status(item);
+    var card = document.createElement("div");
+    card.className = "card";
+
+    var qtyDisplay = (Number(item.qty)%1===0) ? Number(item.qty) : Number(item.qty).toFixed(1);
+    var minDisplay = (Number(item.min)%1===0) ? Number(item.min) : Number(item.min).toFixed(1);
+
+    card.innerHTML =
+      '<div class="card-top">' +
+        '<div class="card-icon">'+item.emoji+'</div>' +
+        '<div class="card-title">' +
+          '<div class="card-name">'+escapeHtml(item.name)+'</div>' +
+          '<div class="card-cat">'+escapeHtml(item.cat)+'</div>' +
+          (item.notes ? '<div class="card-notes">'+escapeHtml(item.notes)+'</div>' : '') +
+        '</div>' +
+        '<div class="badge '+(s==="ok"?"ok":s==="bajo"?"low":"out")+'">'+statusLabel(s)+'</div>' +
+      '</div>' +
+      '<div>' +
+        '<div class="qty-row">' +
+          '<div><span class="qty-value">'+qtyDisplay+'</span><span class="qty-unit">'+escapeHtml(item.unit)+'</span></div>' +
+          '<div class="qty-min">mín. '+minDisplay+' '+escapeHtml(item.unit)+'</div>' +
+        '</div>' +
+        '<div class="gauge" style="margin-top:8px;"><div class="gauge-fill '+(s==="ok"?"ok":s==="bajo"?"low":"out")+'" style="width:'+gaugePct(item)+'%"></div></div>' +
+      '</div>' +
+      '<div class="card-actions">' +
+        (s!=="ok" ?
+          '<button class="buy" data-action="restock" data-id="'+item.id+'">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM20 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>' +
+            'Marcar comprado</button>'
+          :
+          '<button data-action="use" data-id="'+item.id+'">Registrar uso</button>'
+        ) +
+        '<button class="icon-btn" data-action="edit" data-id="'+item.id+'" title="Editar">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>' +
+        '</button>' +
+      '</div>';
+
+    return card;
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  /* ---------- Banner ---------- */
+  var bannerDismissed = false;
+  function itemsToBuy(){
+    return state.items.filter(function(i){ var s=status(i); return s==="bajo"||s==="agotado"; });
+  }
+  function renderBanner(){
+    var banner = document.getElementById("reminderBanner");
+    var toBuy = itemsToBuy();
+    if(toBuy.length === 0 || bannerDismissed){ banner.style.display = "none"; return; }
+    banner.style.display = "flex";
+    document.getElementById("bannerTitle").textContent =
+      toBuy.length + (toBuy.length===1 ? " ingrediente necesita compra" : " ingredientes necesitan compra");
+    var names = toBuy.slice(0,6).map(function(i){
+      return i.name + (status(i)==="agotado" ? " (agotado)" : " (bajo)");
+    }).join(" · ");
+    if(toBuy.length > 6) names += " · +" + (toBuy.length-6) + " más";
+    document.getElementById("bannerList").textContent = names;
+  }
+
+  function maybeNotify(){
+    if(!("Notification" in window)) return;
+    if(Notification.permission !== "granted") return;
+    var toBuy = itemsToBuy();
+    if(toBuy.length === 0) return;
+    var lastNotif = sessionStorage.getItem("last_notif_count");
+    if(lastNotif === String(toBuy.length)) return;
+    sessionStorage.setItem("last_notif_count", String(toBuy.length));
+    try{
+      new Notification("Inventario: ingredientes por comprar", {
+        body: toBuy.slice(0,5).map(function(i){ return i.name; }).join(", ") + (toBuy.length>5?"...":"")
+      });
+    }catch(e){}
+  }
+
+  document.getElementById("enableNotifBtn").addEventListener("click", function(){
+    if(!("Notification" in window)){ showToast("Tu navegador no soporta notificaciones"); return; }
+    Notification.requestPermission().then(function(perm){
+      if(perm === "granted"){ showToast("Recordatorios activados"); maybeNotify(); }
+      else showToast("No se activaron las notificaciones");
+    });
+  });
+  document.getElementById("bannerCloseBtn").addEventListener("click", function(){ bannerDismissed = true; renderBanner(); });
+
+  /* ---------- Toast ---------- */
+  var toastTimer;
+  function showToast(msg){
+    var t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.classList.remove("show"); }, 2400);
+  }
+
+  /* ---------- Sincronización ---------- */
+  function updateSyncUI(){
+    var dots = [document.getElementById("syncDot"), document.getElementById("syncDot2")];
+    var labels = [document.getElementById("syncLabel"), document.getElementById("syncLabel2")];
+    var label = "Solo en este teléfono";
+    var cls = "off";
+    if(sync.blobId){
+      if(sync.syncing){ label = "Sincronizando..."; cls = "syncing"; }
+      else if(sync.connected){ label = "Sincronizado"; cls = "on"; }
+      else{ label = "Sin conexión"; cls = "off"; }
+    }
+    dots.forEach(function(d){ d.className = "sync-dot " + cls; });
+    labels.forEach(function(l){ l.textContent = label; });
+
+    document.getElementById("footerNote").textContent = sync.blobId
+      ? "Sincronizado por enlace. Cualquiera con el enlace puede editar el inventario."
+      : "Los datos se guardan solo en este dispositivo.";
+
+    var active = !!sync.blobId;
+    document.getElementById("syncActive").style.display = active ? "block" : "none";
+    document.getElementById("syncInactive").style.display = active ? "none" : "block";
+    if(active){
+      var link = location.origin + location.pathname + "?sync=" + sync.blobId;
+      document.getElementById("syncLinkInput").value = link;
     }
   }
-  return n ? {r:r/n, g:g/n, b:b/n} : {r:0,g:0,b:0};
-}
 
-function dist(a,b) {
-  return Math.sqrt((a.r-b.r)**2 + (a.g-b.g)**2 + (a.b-b.b)**2);
-}
+  function buildApiUrl(id){ return API_BASE + "/" + id; }
 
-function getSignature(ctx, W, H) {
-  const d = ctx.getImageData(0,0,W,H).data;
-  // 5 zonas: centro (doble peso), cuatro cuadrantes
-  const cX=Math.floor(W*.2),  cY=Math.floor(H*.2);
-  const cW=Math.floor(W*.6),  cH=Math.floor(H*.6);
-  const center = sampleZone(d,W,cX,cY,cW,cH);
-  const q1 = sampleZone(d,W,0,          0,           Math.floor(W/2), Math.floor(H/2));
-  const q2 = sampleZone(d,W,Math.floor(W/2),0,       Math.floor(W/2), Math.floor(H/2));
-  const q3 = sampleZone(d,W,0,          Math.floor(H/2), Math.floor(W/2), Math.floor(H/2));
-  const q4 = sampleZone(d,W,Math.floor(W/2),Math.floor(H/2),Math.floor(W/2),Math.floor(H/2));
-  // centro tiene peso 4, cada cuadrante peso 1 → total 8
-  return {
-    r:(center.r*4+q1.r+q2.r+q3.r+q4.r)/8,
-    g:(center.g*4+q1.g+q2.g+q3.g+q4.g)/8,
-    b:(center.b*4+q1.b+q2.b+q3.b+q4.b)/8,
-  };
-}
+  function ensureBlob(){
+    if(sync.blobId) return Promise.resolve();
+    sync.syncing = true; updateSyncUI();
+    return fetch(API_BASE, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json", "Accept":"application/json" },
+      body: JSON.stringify({ items: state.items, updatedAt: state.updatedAt })
+    }).then(function(res){
+      var loc = res.headers.get("Location");
+      if(loc){ sync.blobId = loc.split("/").pop(); persistSyncConfig(); }
+      sync.connected = true;
+    }).catch(function(){ sync.connected = false; })
+      .finally(function(){ sync.syncing = false; updateSyncUI(); });
+  }
 
-function detectar(captured) {
-  return PRODUCTOS.reduce((best, p) => {
-    const d = dist(captured, p.cp);
-    return d < best.dist ? {producto:p, dist:d} : best;
-  }, {producto:PRODUCTOS[0], dist:Infinity}).producto;
-}
+  function pushRemote(){
+    if(!sync.blobId) return;
+    clearTimeout(sync.pushTimer);
+    sync.pushTimer = setTimeout(function(){
+      sync.syncing = true; updateSyncUI();
+      fetch(buildApiUrl(sync.blobId), {
+        method:"PUT",
+        headers:{ "Content-Type":"application/json", "Accept":"application/json" },
+        body: JSON.stringify({ items: state.items, updatedAt: state.updatedAt })
+      }).then(function(res){
+        sync.connected = res.ok;
+      }).catch(function(){ sync.connected = false; })
+        .finally(function(){ sync.syncing = false; updateSyncUI(); });
+    }, 500);
+  }
 
-/* =====================================================
-   CAPTURA
-===================================================== */
-function capturar() {
-  if(!streamActive) return;
-  const W = video.videoWidth  || 640;
-  const H = video.videoHeight || 480;
-  canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(video,0,0,W,H);
+  function pullRemote(silent){
+    if(!sync.blobId) return Promise.resolve();
+    return fetch(buildApiUrl(sync.blobId), { headers:{ "Accept":"application/json" } })
+      .then(function(res){
+        if(!res.ok) throw new Error("no encontrado");
+        return res.json();
+      })
+      .then(function(data){
+        sync.connected = true;
+        if(data && Array.isArray(data.items)){
+          var remoteUpdated = Number(data.updatedAt||0);
+          if(remoteUpdated > state.updatedAt){
+            state.items = data.items;
+            state.updatedAt = remoteUpdated;
+            persistLocal(false);
+            render();
+            if(!silent) showToast("Inventario actualizado");
+          }
+        }
+      })
+      .catch(function(){ sync.connected = false; })
+      .finally(updateSyncUI);
+  }
 
-  const sig = getSignature(ctx,W,H);
-  const producto = detectar(sig);
+  function startPolling(){
+    clearInterval(sync.pollTimer);
+    if(!sync.blobId) return;
+    sync.pollTimer = setInterval(function(){ pullRemote(true); }, 8000);
+  }
 
-  // Freeze frame
-  scanBeam.classList.remove("active");
-  video.pause(); video.style.display="none";
-  canvas.style.display="block";
-  canvas.style.width="100%"; canvas.style.height="100%";
-  canvas.style.objectFit="cover";
-  vfStatus.textContent = `Detectado: ${producto.nombre}`;
-  btnCap.style.display="none";
-  btnRet.style.display="block";
+  document.getElementById("createSyncBtn").addEventListener("click", function(){
+    ensureBlob().then(function(){
+      if(sync.blobId){ showToast("Enlace creado"); startPolling(); }
+      else showToast("No se pudo crear el enlace. Revisa tu conexión.");
+    });
+  });
 
-  mostrarResultado(producto);
-}
+  document.getElementById("joinSyncBtn").addEventListener("click", function(){
+    var raw = document.getElementById("joinCodeInput").value.trim();
+    if(!raw){ showToast("Pega el enlace o código"); return; }
+    var id = raw;
+    var match = raw.match(/sync=([a-zA-Z0-9-]+)/);
+    if(match) id = match[1];
+    else{
+      var parts = raw.split("/");
+      id = parts[parts.length-1];
+    }
+    sync.syncing = true; updateSyncUI();
+    fetch(buildApiUrl(id), { headers:{ "Accept":"application/json" } })
+      .then(function(res){
+        if(!res.ok) throw new Error("no encontrado");
+        return res.json();
+      })
+      .then(function(data){
+        sync.blobId = id;
+        persistSyncConfig();
+        if(data && Array.isArray(data.items)){
+          state.items = data.items;
+          state.updatedAt = Number(data.updatedAt||Date.now());
+          persistLocal(false);
+          render();
+        }
+        showToast("Sincronización activada");
+        startPolling();
+      })
+      .catch(function(){ showToast("No se encontró ese enlace/código"); })
+      .finally(function(){ sync.syncing = false; updateSyncUI(); });
+  });
 
-/* =====================================================
-   RESULTADO
-===================================================== */
-function mostrarResultado(p) {
-  const c = CANECAS[p.caneca];
+  document.getElementById("copyLinkBtn").addEventListener("click", function(){
+    var input = document.getElementById("syncLinkInput");
+    input.select(); input.setSelectionRange(0,9999);
+    try{ document.execCommand("copy"); showToast("Enlace copiado"); }
+    catch(e){
+      if(navigator.clipboard) navigator.clipboard.writeText(input.value).then(function(){ showToast("Enlace copiado"); });
+    }
+  });
 
-  document.querySelectorAll(".ref-item").forEach(el => el.classList.remove("match"));
-  const refEl = document.getElementById("ref-"+p.id);
-  if(refEl) { refEl.classList.add("match"); refEl.scrollIntoView({behavior:"smooth",block:"nearest"}); }
+  document.getElementById("pullNowBtn").addEventListener("click", function(){ pullRemote(false); });
 
-  document.getElementById("resImg").src         = p.img;
-  document.getElementById("resImg").alt         = p.nombre;
-  document.getElementById("resImgLabel").textContent = p.nombre;
+  document.getElementById("unlinkBtn").addEventListener("click", function(){
+    if(!confirm("Se dejará de sincronizar este dispositivo. Tus datos locales se conservan. ¿Continuar?")) return;
+    sync.blobId = null;
+    clearInterval(sync.pollTimer);
+    persistSyncConfig();
+    updateSyncUI();
+    showToast("Sincronización desactivada");
+  });
 
-  const tag = document.getElementById("resTag");
-  tag.textContent = c.emoji+" "+c.sub;
-  tag.style.background = c.light; tag.style.color = c.color;
+  /* ---------- Respaldo (exportar / importar) ---------- */
+  document.getElementById("exportBtn").addEventListener("click", function(){
+    var blob = new Blob([JSON.stringify({ items: state.items, updatedAt: state.updatedAt }, null, 2)], { type:"application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = "inventario-respaldo.json";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("Copia exportada");
+  });
+  document.getElementById("importBtn").addEventListener("click", function(){ document.getElementById("importFile").click(); });
+  document.getElementById("importFile").addEventListener("change", function(e){
+    var file = e.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      try{
+        var data = JSON.parse(ev.target.result);
+        if(!data || !Array.isArray(data.items)) throw new Error("formato inválido");
+        if(!confirm("Esto reemplazará tu inventario actual con el del archivo. ¿Continuar?")) return;
+        state.items = data.items;
+        persistLocal();
+        render();
+        if(sync.blobId) pushRemote();
+        showToast("Copia importada");
+      }catch(err){ showToast("El archivo no es válido"); }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  });
 
-  document.getElementById("resProd").textContent  = p.nombre;
-  const rc = document.getElementById("resCaneca");
-  rc.textContent = c.nombre; rc.style.color = c.color;
-  document.getElementById("resInstr").textContent = "💡 "+p.instr;
+  /* ---------- Modales ---------- */
+  var overlay = document.getElementById("overlay");
+  var settingsOverlay = document.getElementById("settingsOverlay");
 
-  document.getElementById("step2wrap").classList.add("show");
-  document.getElementById("resultSection").classList.add("visible");
+  function buildEmojiPicker(){
+    var wrap = document.getElementById("emojiPicker");
+    wrap.innerHTML = "";
+    EMOJIS.forEach(function(em){
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "emoji-opt" + (em===state.selectedEmoji ? " selected" : "");
+      b.textContent = em;
+      b.addEventListener("click", function(){
+        state.selectedEmoji = em;
+        wrap.querySelectorAll(".emoji-opt").forEach(function(el){ el.classList.remove("selected"); });
+        b.classList.add("selected");
+      });
+      wrap.appendChild(b);
+    });
+  }
 
-  document.querySelectorAll(".bin-card").forEach(b=>b.classList.remove("active"));
-  const binEl = document.getElementById("bin-"+p.caneca);
-  if(binEl) binEl.classList.add("active");
+  function openModal(item){
+    state.editingId = item ? item.id : null;
+    state.selectedEmoji = item ? item.emoji : EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+    document.getElementById("modalTitle").textContent = item ? "Editar ingrediente" : "Nuevo ingrediente";
+    document.getElementById("fName").value = item ? item.name : "";
+    document.getElementById("fCat").value = item ? item.cat : "Verduras y frutas";
+    document.getElementById("fQty").value = item ? item.qty : "";
+    document.getElementById("fUnit").value = item ? item.unit : "kg";
+    document.getElementById("fMin").value = item ? item.min : "";
+    document.getElementById("fNotes").value = item ? (item.notes||"") : "";
+    document.getElementById("deleteBtn").style.display = item ? "block" : "none";
+    buildEmojiPicker();
+    overlay.classList.add("show");
+  }
+  function closeModal(){ overlay.classList.remove("show"); state.editingId = null; }
 
-  setTimeout(()=>{ document.getElementById("resultSection").scrollIntoView({behavior:"smooth",block:"start"}); },200);
-  setTimeout(()=>{ if(binEl) binEl.scrollIntoView({behavior:"smooth",block:"center"}); },900);
-}
+  document.getElementById("openAddBtn").addEventListener("click", function(){ openModal(null); });
+  document.getElementById("modalCloseBtn").addEventListener("click", closeModal);
+  document.getElementById("cancelBtn").addEventListener("click", closeModal);
+  overlay.addEventListener("click", function(e){ if(e.target === overlay) closeModal(); });
 
-/* =====================================================
-   REINICIAR
-===================================================== */
-function reiniciar() {
-  canvas.style.display="none";
-  video.style.display="block"; video.play();
-  scanBeam.classList.add("active");
-  vfStatus.textContent="Cámara lista — apunta al residuo";
-  btnCap.style.display="block"; btnRet.style.display="none";
+  document.getElementById("settingsBtn").addEventListener("click", function(){ settingsOverlay.classList.add("show"); });
+  document.getElementById("settingsCloseBtn").addEventListener("click", function(){ settingsOverlay.classList.remove("show"); });
+  settingsOverlay.addEventListener("click", function(e){ if(e.target === settingsOverlay) settingsOverlay.classList.remove("show"); });
 
-  document.querySelectorAll(".ref-item").forEach(el=>el.classList.remove("match"));
-  document.querySelectorAll(".bin-card").forEach(b=>b.classList.remove("active"));
-  document.getElementById("resultSection").classList.remove("visible");
-  document.getElementById("step2wrap").classList.remove("show");
-  window.scrollTo({top:0,behavior:"smooth"});
-}
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Escape") return;
+    if(overlay.classList.contains("show")) closeModal();
+    if(settingsOverlay.classList.contains("show")) settingsOverlay.classList.remove("show");
+  });
+
+  function afterMutation(){
+    persistLocal();
+    render();
+    if(sync.blobId) pushRemote();
+    maybeNotify();
+  }
+
+  document.getElementById("saveBtn").addEventListener("click", function(){
+    var name = document.getElementById("fName").value.trim();
+    if(!name){ showToast("Escribe el nombre del ingrediente"); document.getElementById("fName").focus(); return; }
+    var qty = parseFloat(document.getElementById("fQty").value);
+    var min = parseFloat(document.getElementById("fMin").value);
+    if(isNaN(qty) || qty < 0) qty = 0;
+    if(isNaN(min) || min < 0) min = 0;
+
+    var data = {
+      name: name,
+      cat: document.getElementById("fCat").value,
+      emoji: state.selectedEmoji,
+      qty: qty,
+      unit: document.getElementById("fUnit").value,
+      min: min,
+      notes: document.getElementById("fNotes").value.trim()
+    };
+
+    if(state.editingId){
+      var idx = state.items.findIndex(function(i){ return i.id === state.editingId; });
+      if(idx !== -1) state.items[idx] = Object.assign({}, state.items[idx], data);
+      showToast("Ingrediente actualizado");
+    }else{
+      data.id = uid();
+      state.items.push(data);
+      showToast("Ingrediente añadido");
+    }
+    closeModal();
+    afterMutation();
+  });
+
+  document.getElementById("deleteBtn").addEventListener("click", function(){
+    if(!state.editingId) return;
+    if(!confirm("¿Eliminar este ingrediente del inventario?")) return;
+    state.items = state.items.filter(function(i){ return i.id !== state.editingId; });
+    closeModal();
+    afterMutation();
+    showToast("Ingrediente eliminado");
+  });
+
+  document.getElementById("grid").addEventListener("click", function(e){
+    var btn = e.target.closest("button[data-action]");
+    if(!btn) return;
+    var id = btn.getAttribute("data-id");
+    var action = btn.getAttribute("data-action");
+    var item = state.items.find(function(i){ return i.id === id; });
+    if(!item) return;
+
+    if(action === "edit"){
+      openModal(item);
+    }else if(action === "restock"){
+      var suggestion = Math.max(item.min*2, item.min+1, 1);
+      var val = prompt('¿Cuánto compraste de "'+item.name+'" ('+item.unit+')?', suggestion);
+      if(val === null) return;
+      var n = parseFloat(val);
+      if(isNaN(n) || n < 0){ showToast("Cantidad no válida"); return; }
+      item.qty = Number(item.qty||0) + n;
+      afterMutation();
+      showToast("Stock actualizado");
+    }else if(action === "use"){
+      var val2 = prompt('¿Cuánto vas a descontar de "'+item.name+'" ('+item.unit+')?', "1");
+      if(val2 === null) return;
+      var n2 = parseFloat(val2);
+      if(isNaN(n2) || n2 < 0){ showToast("Cantidad no válida"); return; }
+      item.qty = Math.max(0, Number(item.qty||0) - n2);
+      afterMutation();
+      showToast("Uso registrado");
+    }
+  });
+
+  document.getElementById("filterSeg").addEventListener("click", function(e){
+    var btn = e.target.closest("button[data-filter]");
+    if(!btn) return;
+    document.querySelectorAll("#filterSeg .chip").forEach(function(b){ b.classList.remove("active"); });
+    btn.classList.add("active");
+    state.filter = btn.getAttribute("data-filter");
+    render();
+  });
+
+  document.getElementById("searchInput").addEventListener("input", function(e){
+    state.search = e.target.value;
+    render();
+  });
+
+  document.getElementById("brandName").addEventListener("input", function(e){
+    try{ localStorage.setItem(BRAND_KEY, e.target.value); }catch(err){}
+  });
+
+  /* ---------- Sincronizar al volver a la app ---------- */
+  document.addEventListener("visibilitychange", function(){
+    if(document.visibilityState === "visible" && sync.blobId) pullRemote(true);
+  });
+
+  /* ---------- Init ---------- */
+  load();
+  render();
+  updateSyncUI();
+  if(sync.blobId){ pullRemote(true); startPolling(); }
+  setTimeout(maybeNotify, 800);
+
+})();
 </script>
 </body>
 </html>
